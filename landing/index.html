@@ -124,6 +124,7 @@
   .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 36px; }
   .meta, .later { display: table; margin: 18px auto 0; padding: 5px 12px; border-radius: 999px; font-size: 13px; color: var(--ink-2); background: rgba(255, 255, 255, .72); }
   .later { margin-top: 10px; }
+  .soon::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 8px; border-radius: 1.5px; background: var(--blue); vertical-align: 1px; animation: blink 1.6s steps(2) infinite; }
   .hint { position: absolute; z-index: 2; left: 50%; bottom: 28px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 10px; height: 34px; padding: 0 16px; border-radius: 999px; font-size: 13px; color: #fff; white-space: nowrap;
           background: rgba(18, 36, 70, .42); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22); transition: opacity .8s, transform .8s var(--ease); pointer-events: none; }
   .hint i { width: 8px; height: 8px; background: #fff; border-radius: 1.5px; animation: blink 1.6s steps(2) infinite; }
@@ -134,10 +135,10 @@
   .dots i.on { width: 18px; background: #fff; }
   /* intro: the page holds still until the loader has opened */
   .pre .hero h1 .ln > span { transform: translateY(105%); }
-  .pre .hero .badge, .pre .hero .lead, .pre .hero .cta, .pre .hero .meta, .pre .hint, .pre .nav, .pre .dots { opacity: 0; }
+  .pre .hero .badge, .pre .hero .lead, .pre .hero .cta, .pre .hero .meta, .pre .hero .later, .pre .hint, .pre .nav, .pre .dots { opacity: 0; }
   .hero h1 .ln > span { transition: transform 1.2s var(--ease); }
   .hero h1 .ln:nth-child(2) > span { transition-delay: .08s; }
-  .hero .badge, .hero .lead, .hero .cta, .hero .meta, .hint, .nav, .dots { transition: opacity 1s var(--ease) .25s, transform .6s var(--ease), background .4s, box-shadow .4s; }
+  .hero .badge, .hero .lead, .hero .cta, .hero .meta, .hero .later, .hint, .nav, .dots { transition: opacity 1s var(--ease) .25s, transform .6s var(--ease), background .4s, box-shadow .4s; }
 
   /* works with */
   .works { padding: 56px 0; text-align: center; color: var(--faint); font-size: 14px; }
@@ -420,6 +421,7 @@
         <a class="btn btn-light" href="#" data-webapp target="_blank" rel="noopener">Try it in your browser<svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       </div>
       <p class="meta" data-meta></p>
+      <p class="later soon">iPhone, Android and Windows apps coming soon</p>
     </div>
     <div class="hint" id="hint"><i></i><span>Move across the picture</span></div>
     <div class="dots" id="heroDots" aria-hidden="true"></div>
@@ -629,7 +631,7 @@
         <a class="btn btn-light" href="#" data-webapp target="_blank" rel="noopener">Try it in your browser<svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       </div>
       <p class="meta rv" style="--d: 3" data-meta></p>
-      <p class="later rv" style="--d: 3">Windows and iPhone are coming later.</p>
+      <p class="later soon rv" style="--d: 3">iPhone, Android and Windows apps coming soon</p>
     </div>
   </section>
 
