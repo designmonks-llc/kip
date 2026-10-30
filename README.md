@@ -8,7 +8,9 @@ Nothing is uploaded. Speech is transcribed on your device, audio is never stored
 
 - **Mac (Apple silicon):** download `Kip-arm64.dmg` from the [latest release](https://github.com/designmonks-llc/kip/releases/latest), open it and drag Kip into Applications.
   The app isn't notarized yet, so the first time macOS blocks it: open it once, then go to **System Settings → Privacy & Security → Open Anyway**.
-- **Browser:** the web version runs in Chrome or Edge (link coming soon).
+- **Browser:** open [kip-app-five.vercel.app](https://kip-app-five.vercel.app) in Chrome or Edge.
+
+Website: [kip-notes.vercel.app](https://kip-notes.vercel.app)
 
 ## What it does
 
@@ -25,6 +27,8 @@ Nothing is uploaded. Speech is transcribed on your device, audio is never stored
 | [`web/`](web) | The Kip app (Vite + React + TypeScript). Everything runs in the browser; notes live in IndexedDB. |
 | [`desktop/`](desktop) | Kip for Mac: an Electron shell around `web/` that adds an always-on-top sticky and meeting audio from desktop apps. |
 | [`landing/`](landing) | The landing page: one static HTML file, no build step. |
+
+Both `web/` and `landing/` deploy to Vercel; their `vercel.json` files hold the settings (the app needs cross-origin isolation headers for fast on-device speech).
 
 ## Run it yourself
 
