@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+
+# Mac app build output (the .dmg goes on GitHub Releases, not in the code)
+desktop/app/
+desktop/release/
+
+# private planning docs
+01-STRATEGY.md
+02-PRD.md
+QA-REPORT.md
+
+# old landing drafts
+landing/v1.html
+landing/wireframe.html

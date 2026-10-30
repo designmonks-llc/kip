@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'" />
+<title>Share with Kip</title>
+<style>
+  :root { --ink: #22314a; --ink-2: #44546d; --muted: #6b7a91; --line: #e1e9f2; --sky-50: #f2f7fd; --sky-100: #e2eefa; --sky-300: #9fc6ee; --blue: #2a63d4; --deep: #12307a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.45 -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif; color: var(--ink); background: #f4f8fc; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; height: 100vh; }
+  header { padding: 22px 26px 12px; }
+  h1 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+  header p { margin: 4px 0 0; color: var(--muted); }
+  .tabs { display: inline-flex; gap: 4px; margin-top: 14px; padding: 4px; border-radius: 999px; background: #fff; box-shadow: inset 0 0 0 1px var(--line); }
+  .tabs button { height: 30px; padding: 0 14px; border: 0; border-radius: 999px; background: none; font: inherit; font-weight: 500; color: var(--muted); cursor: pointer; }
+  .tabs button.on { background: var(--sky-100); color: var(--ink); }
+  main { flex: 1; overflow: auto; padding: 8px 26px 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-content: start; }
+  .src { display: grid; gap: 8px; padding: 8px; border: 0; border-radius: 12px; background: #fff; box-shadow: inset 0 0 0 1px var(--line); text-align: left; font: inherit; color: inherit; cursor: pointer; transition: box-shadow .2s, transform .3s; }
+  .src:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--sky-300), 0 8px 18px rgba(15, 40, 80, .08); }
+  .src.on { box-shadow: inset 0 0 0 2px var(--blue); }
+  .src img.t { width: 100%; aspect-ratio: 16 / 10; object-fit: contain; background: var(--sky-50); border-radius: 8px; }
+  .src span { display: flex; align-items: center; gap: 6px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .src span img { width: 16px; height: 16px; flex: none; }
+  .empty { grid-column: 1 / -1; color: var(--muted); padding: 30px 0; text-align: center; }
+  footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 26px 18px; border-top: 1px solid var(--line); background: #fff; }
+  footer p { margin: 0; font-size: 12px; color: var(--muted); max-width: 380px; }
+  .btns { display: flex; gap: 8px; }
+  .btn { height: 36px; padding: 0 16px; border: 0; border-radius: 999px; font: inherit; font-weight: 600; cursor: pointer; }
+  .btn.ghost { background: #fff; box-shadow: inset 0 0 0 1px #cbd8e7; color: var(--ink); }
+  .btn.go { background: var(--deep); color: #fff; }
+  .btn.go:disabled { opacity: .4; cursor: default; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Share your meeting with Kip</h1>
+    <p>Pick the meeting window. Kip hears the call’s sound and reads shared slides, all on this Mac.</p>
+    <div class="tabs"><button class="on" data-t="window">Windows</button><button data-t="screen">Screens</button></div>
+  </header>
+  <main id="list"></main>
+  <footer>
+    <p>The call’s sound comes from your Mac’s audio, so keep the meeting playing out loud or in headphones. Nothing is recorded or uploaded.</p>
+    <div class="btns"><button class="btn ghost" id="cancel">Cancel</button><button class="btn go" id="share" disabled>Share</button></div>
+  </footer>
+<script>
+  let all = [], tab = 'window', chosen = null;
+  const list = document.getElementById('list'), share = document.getElementById('share');
+  function render() {
+    const items = all.filter((s) => (tab === 'screen') === s.screen);
+    list.innerHTML = '';
+    if (!items.length) { list.innerHTML = '<p class="empty">Nothing to show here. If this list stays empty, allow Kip under System Settings → Privacy & Security → Screen & System Audio Recording, then reopen Kip.</p>'; return; }
+    for (const s of items) {
+      const b = document.createElement('button');
+      b.className = 'src' + (s.id === chosen ? ' on' : '');
+      const t = document.createElement('img'); t.className = 't'; t.src = s.thumb; t.alt = '';
+      const label = document.createElement('span');
+      if (s.icon) { const i = document.createElement('img'); i.src = s.icon; i.alt = ''; label.append(i); }
+      label.append(s.name);
+      b.append(t, label);
+      b.onclick = () => { chosen = s.id; share.disabled = false; render(); };
+      b.ondblclick = () => window.picker.choose(s.id);
+      list.append(b);
+    }
+  }
+  document.querySelectorAll('.tabs button').forEach((b) => b.onclick = () => {
+    tab = b.dataset.t; document.querySelectorAll('.tabs button').forEach((x) => x.classList.toggle('on', x === b)); render();
+  });
+  document.getElementById('cancel').onclick = () => window.picker.choose(null);
+  share.onclick = () => chosen && window.picker.choose(chosen);
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') window.picker.choose(null); if (e.key === 'Enter' && chosen) window.picker.choose(chosen); });
+  window.picker.list().then((s) => { all = s; if (!all.some((x) => !x.screen)) tab = 'screen'; render(); });
+</script>
+</body>
+</html>

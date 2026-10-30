@@ -1,0 +1,66 @@
+{
+  "name": "kip",
+  "productName": "Kip",
+  "version": "0.1.0",
+  "description": "Kip \u2014 calm notes and private meeting notes, on your Mac.",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "web": "npm --prefix ../web run build && rm -rf app && cp -R ../web/dist app",
+    "start": "npm run web && electron .",
+    "dist": "npm run web && electron-builder --mac --arm64"
+  },
+  "build": {
+    "appId": "app.kip.notes",
+    "productName": "Kip",
+    "files": [
+      "main.js",
+      "preload.js",
+      "picker.html",
+      "picker-preload.js",
+      "app/**/*"
+    ],
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.png",
+      "target": [
+        "dmg"
+      ],
+      "identity": "-",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "Kip listens to your meetings privately on this Mac to write your notes. Audio never leaves your device.",
+        "NSAudioCaptureUsageDescription": "Kip hears your meeting app's audio privately on this Mac to transcribe it. Audio never leaves your device.",
+        "NSScreenCaptureUsageDescription": "Kip reads text from slides shared in your meetings, privately on this Mac."
+      },
+      "hardenedRuntime": false,
+      "artifactName": "Kip-${arch}.${ext}"
+    },
+    "dmg": {
+      "title": "Install Kip",
+      "contents": [
+        {
+          "x": 150,
+          "y": 190
+        },
+        {
+          "x": 390,
+          "y": 190,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
+    }
+  },
+  "devDependencies": {
+    "electron": "42.11.13",
+    "electron-builder": "26.17.0"
+  }
+}
