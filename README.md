@@ -6,7 +6,7 @@ Nothing is uploaded. Speech is transcribed on your device, audio is never stored
 
 ## Get it
 
-- **Mac (Apple silicon):** download `Kip-arm64.dmg` from the [latest release](https://github.com/brandtanvir/kip/releases/latest), open it and drag Kip into Applications.
+- **Mac (Apple silicon):** download `Kip-arm64.dmg` from the [latest release](https://github.com/designmonks-llc/kip/releases/latest), open it and drag Kip into Applications.
   The app isn't notarized yet, so the first time macOS blocks it: open it once, then go to **System Settings → Privacy & Security → Open Anyway**.
 - **Browser:** the web version runs in Chrome or Edge (link coming soon).
 
