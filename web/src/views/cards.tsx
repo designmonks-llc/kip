@@ -29,7 +29,7 @@ export function ItemCard({ p, pages, menuOpen, renaming, onRenamed, onMenu }: Ca
   return (
     <article className={`note-card ${folder ? 'folder-card' : ''} ${menuOpen ? 'menu-open' : ''}`} onClick={() => !renaming && go(pageHref(p))}>
       <div className="nc-head">
-        <span className={`nc-icon ${p.kind}`}>{folder ? <Folder size={14} /> : p.kind === 'meeting' ? <Mic size={14} /> : <FileText size={14} />}</span>
+        <span className={`nc-icon ${p.kind} ${folder && p.color ? `tile-${p.color}` : ''}`}>{folder ? <Folder size={14} /> : p.kind === 'meeting' ? <Mic size={14} /> : <FileText size={14} />}</span>
         {p.pinned && <Star size={13} className="pin-mark" />}
       </div>
       {renaming ? (

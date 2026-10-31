@@ -5,7 +5,7 @@ import { useSession } from './common';
 import { endMeeting, useMeetingKeys } from './Live';
 import { PageSticky } from './PageSticky';
 import { Sticky } from './Sticky';
-import { applyLook } from '../lib/look';
+import { applyLook, useTheme } from '../lib/look';
 import { useSettings } from './ui';
 import { ErrorBoundary } from './Safety';
 
@@ -16,7 +16,8 @@ export function FloatingHost() {
   const s = useSession();
   useMeetingKeys(win && target?.kind === 'meeting' ? win.document : null);
   const look = useSettings();
-  useEffect(() => { if (win) applyLook(win.document, look); }, [win, look]);
+  const theme = useTheme(look.theme);
+  useEffect(() => { if (win) applyLook(win.document, { ...look, theme }); }, [win, look, theme]);
 
   // A meeting that ends elsewhere shouldn't leave an empty floating window behind.
   useEffect(() => { if (target?.kind === 'meeting' && !s) floating.close(); }, [target, s]);

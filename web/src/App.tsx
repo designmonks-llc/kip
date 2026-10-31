@@ -20,7 +20,7 @@ import { StartMeeting } from './views/StartMeeting';
 import { FolderView } from './views/FolderView';
 import { quickNote } from './views/workspace';
 import { floating } from './lib/floating';
-import { applyLook } from './lib/look';
+import { applyLook, useTheme } from './lib/look';
 import { useSettings } from './views/ui';
 
 const typing = (t: EventTarget | null) => {
@@ -33,7 +33,8 @@ export function App() {
   const s = useSession();
   const [hint, setHint] = useState('');
   const look = useSettings();
-  useEffect(() => applyLook(document, look), [look]);
+  const theme = useTheme(look.theme);
+  useEffect(() => applyLook(document, { ...look, theme }), [look, theme]);
   const [path, query = ''] = route.split('?');
   const parts = path.split('/').filter(Boolean);
   const params = new URLSearchParams(query);

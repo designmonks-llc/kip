@@ -42,6 +42,8 @@ export interface Page {
   meetingId?: string;
   content?: unknown[]; // BlockNote blocks (notes only)
   pinned?: boolean;
+  /** a light colour for a folder (one of the shades in ColorPicker) */
+  color?: string;
   /** Position among its siblings in the sidebar (set by dragging); unset pages follow, oldest first. */
   order?: number;
   trashedAt?: number;
@@ -57,7 +59,7 @@ export interface Settings {
   defaultReadScreen: boolean;
   keepThumbnails: boolean;
   consentShown: boolean;
-  theme: 'light' | 'dark' | 'immersive';
+  theme: 'light' | 'dark' | 'immersive' | 'auto';
   cover: string; // id from COVERS
   mosaic: boolean;
   stickyStyle: 'clean' | 'sky' | 'clouds';

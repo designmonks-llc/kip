@@ -39,8 +39,8 @@ function boardsAsColumns(blocks: B[]): B[] {
   return blocks.map((b) => b.type !== 'kanban' ? { ...b, children: boardsAsColumns(b.children ?? []) } : {
     id: b.id ?? id(), type: 'columnList', props: {}, children: readBoard(String(b.props?.data ?? '')).columns.map((c) => ({
       id: id(), type: 'column', props: { width: 1 }, children: [
-        { id: id(), type: 'heading', props: { ...style, level: 3, isToggleable: false }, content: [{ type: 'text', text: `${c.title} (${c.cards.length})`, styles: {} }], children: [] },
-        ...c.cards.map((k) => ({ id: id(), type: 'bulletListItem', props: style, content: [{ type: 'text', text: k.title, styles: {} }], children: [] })),
+        { id: id(), type: 'heading', props: { ...style, backgroundColor: c.color ?? 'default', level: 3, isToggleable: false }, content: [{ type: 'text', text: `${c.title} (${c.cards.length})`, styles: {} }], children: [] },
+        ...c.cards.map((k) => ({ id: id(), type: 'bulletListItem', props: { ...style, backgroundColor: k.color ?? 'default' }, content: [{ type: 'text', text: k.title, styles: {} }], children: [] })),
       ],
     })),
   });

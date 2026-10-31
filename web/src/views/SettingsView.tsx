@@ -1,4 +1,4 @@
-import { Archive, Copy, Moon, RotateCcw, Sparkles, Sun, Trash2, Upload } from 'lucide-react';
+import { Archive, Copy, Monitor, Moon, RotateCcw, Sparkles, Sun, Trash2, Upload } from 'lucide-react';
 import { useState } from 'react';
 import { backupName, listAutoBackups, makeBackup, restoreAutoBackup, restoreBackup, type RestoreSummary } from '../lib/backup';
 import { clearErrors, readErrors } from '../lib/errlog';
@@ -35,11 +35,11 @@ export function SettingsView() {
       <PageHeader eyebrow="Preferences" title="Settings" lead="Kip keeps everything on this device. Nothing is uploaded." />
 
       <SetCard title="Appearance">
-        <SetRow label="Theme" desc="Immersive puts your cover behind the whole app, under frosted glass.">
+        <SetRow label="Theme" desc="Auto follows your Mac's light or dark setting. Immersive puts your cover behind the whole app, under frosted glass.">
           <Segmented<Settings['theme']>
             value={s.theme}
             onChange={(theme) => set({ theme })}
-            options={[['light', <><Sun size={14} /> Light</>], ['dark', <><Moon size={14} /> Dark</>], ['immersive', <><Sparkles size={14} /> Immersive</>]]}
+            options={[['light', <><Sun size={14} /> Light</>], ['dark', <><Moon size={14} /> Dark</>], ['auto', <><Monitor size={14} /> Auto</>], ['immersive', <><Sparkles size={14} /> Immersive</>]]}
           />
         </SetRow>
         <SetRow label="Home cover" desc="The picture at the top of Home, and behind everything in immersive mode." stacked>

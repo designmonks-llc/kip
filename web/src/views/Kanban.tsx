@@ -4,12 +4,13 @@ import { createReactBlockSpec } from '@blocknote/react';
 import { DRAG_EXCLUSION_CLASSNAME } from '@blocknote/core/extensions';
 import { FileText, Plus, X } from 'lucide-react';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { ColorPicker, shade } from './ColorPicker';
 import { createPage, isTrashed, listPages, uid } from '../lib/db';
 import { go, useData } from './common';
 import { pageTitle } from './workspace';
 
-export interface Card { id: string; title: string; pageId?: string }
-export interface Column { id: string; title: string; cards: Card[] }
+export interface Card { id: string; title: string; pageId?: string; color?: string }
+export interface Column { id: string; title: string; cards: Card[]; color?: string }
 export interface Board { columns: Column[] }
 
 export const emptyBoard = (names = ['To do', 'Doing', 'Done']): Board => ({ columns: names.map((title) => ({ id: uid(), title, cards: [] })) });
@@ -84,7 +85,7 @@ function BoardView({ data, editable, save }: { data: string; editable: boolean; 
     {more && <span className="kb-fade" aria-hidden />}
     <div ref={scroller} className={`kanban ${DRAG_EXCLUSION_CLASSNAME}`} onScroll={check} onKeyDown={(e) => e.stopPropagation()}>
       {board.columns.map((col) => (
-        <section key={col.id} className={`kb-col ${over?.col === col.id ? 'kb-over' : ''}`}
+        <section key={col.id} className={`kb-col ${shade(col.color)} ${over?.col === col.id ? 'kb-over' : ''}`}
           onDragOver={(e) => { if (!drag) return; e.preventDefault(); if (over?.col !== col.id) setOver({ col: col.id, index: col.cards.length }); }}
           onDrop={(e) => { e.preventDefault(); drop(col.id, over?.col === col.id ? over.index : col.cards.length); }}>
           <header className="kb-head">
@@ -93,6 +94,8 @@ function BoardView({ data, editable, save }: { data: string; editable: boolean; 
               onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== col.title) update((b) => { b.columns.find((c) => c.id === col.id)!.title = v; }); }}
               onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }} />
             <span className="kb-count">{col.cards.length}</span>
+            {editable && <ColorPicker value={col.color} title="Column colour" size={13}
+              onPick={(c) => update((b) => { b.columns.find((x) => x.id === col.id)!.color = c === 'default' ? undefined : c; })} />}
             {editable && col.cards.length === 0 && board.columns.length > 1 && (
               <button className="icon-btn" title="Remove this column" aria-label="Remove column" onClick={() => update((b) => { b.columns = b.columns.filter((c) => c.id !== col.id); })}><X size={13} /></button>
             )}
@@ -103,7 +106,7 @@ function BoardView({ data, editable, save }: { data: string; editable: boolean; 
               const gone = !!k.pageId && (!p || isTrashed(p, byId));
               return (
                 <div key={k.id}
-                  className={`kb-card ${gone ? 'gone' : ''} ${drag?.card === k.id ? 'dragging' : ''} ${over?.col === col.id && over.index === i ? 'kb-drop-before' : ''}`}
+                  className={`kb-card ${shade(k.color)} ${gone ? 'gone' : ''} ${drag?.card === k.id ? 'dragging' : ''} ${over?.col === col.id && over.index === i ? 'kb-drop-before' : ''}`}
                   draggable={editable}
                   onDragStart={(e) => { e.stopPropagation(); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/kip-card', k.id); setDrag({ card: k.id, from: col.id }); }}
                   onDragEnd={() => { setDrag(null); setOver(null); }}
@@ -119,10 +122,14 @@ function BoardView({ data, editable, save }: { data: string; editable: boolean; 
                   <span>{p && !gone ? pageTitle(p) : k.title}</span>
                   {p && !gone && <FileText size={13} className="kb-page" />}
                   {editable && (
-                    <button className="icon-btn kb-remove" title="Remove card (its page stays)" aria-label="Remove card"
-                      onClick={(e) => { e.stopPropagation(); update((b) => { const c = b.columns.find((x) => x.id === col.id)!; c.cards = c.cards.filter((x) => x.id !== k.id); }); }}>
-                      <X size={12} />
-                    </button>
+                    <span className="kb-tools">
+                      <ColorPicker value={k.color} title="Card colour" size={12}
+                        onPick={(c) => update((b) => { const card = b.columns.find((x) => x.id === col.id)!.cards.find((x) => x.id === k.id)!; card.color = c === 'default' ? undefined : c; })} />
+                      <button className="icon-btn kb-remove" title="Remove card (its page stays)" aria-label="Remove card"
+                        onClick={(e) => { e.stopPropagation(); update((b) => { const c = b.columns.find((x) => x.id === col.id)!; c.cards = c.cards.filter((x) => x.id !== k.id); }); }}>
+                        <X size={12} />
+                      </button>
+                    </span>
                   )}
                 </div>
               );

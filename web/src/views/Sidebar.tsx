@@ -13,7 +13,7 @@ import { ancestors, descendantIds, movePage, moveTargets, trashWithUndo, newFold
 
 const ICON = 15;
 export const PageIcon = ({ p, open }: { p: Page; open?: boolean }) =>
-  p.kind === 'meeting' ? <Mic size={ICON} /> : p.kind === 'folder' ? (open ? <FolderOpen size={ICON} /> : <Folder size={ICON} />) : <FileText size={ICON} />;
+  p.kind === 'meeting' ? <Mic size={ICON} /> : p.kind === 'folder' ? (open ? <FolderOpen size={ICON} className={p.color ? `ink-${p.color}` : undefined} /> : <Folder size={ICON} className={p.color ? `ink-${p.color}` : undefined} />) : <FileText size={ICON} />;
 
 export function Sidebar() {
   const route = useRoute();
@@ -306,14 +306,14 @@ export function Sidebar() {
           <button onClick={() => setMoving(!moving)}>Move to…</button>
           <button onClick={pinSelected}>{[...sel].every((id) => byId.get(id)?.pinned) ? 'Unpin' : 'Pin'}</button>
           <button className="danger" onClick={trashSelected}>Trash</button>
-          <button className="icon-btn" aria-label="Clear selection" title="Clear (Esc)" onClick={() => { setSel(new Set()); setMoving(false); }}>×</button>
+          <button className="icon-btn sel-clear" aria-label="Clear selection" title="Clear (Esc)" onClick={() => { setSel(new Set()); setMoving(false); }}>×</button>
           {moving && (
             <div className="menu sel-move">
               <button className="menu-item" onClick={() => moveSelected(null)}><span className="menu-dot" /><span>Out of any folder</span></button>
               <div className="menu-scroll">
                 {selTargets.map(({ p, depth }) => (
                   <button key={p.id} className="menu-item" style={{ paddingLeft: 10 + depth * 14 }} onClick={() => moveSelected(p)}>
-                    {p.kind === 'folder' ? <Folder size={14} /> : <span className="menu-dot" />}<span>{pageTitle(p)}</span>
+                    {p.kind === 'folder' ? <Folder size={14} className={p.color ? `ink-${p.color}` : undefined} /> : <span className="menu-dot" />}<span>{pageTitle(p)}</span>
                   </button>
                 ))}
               </div>

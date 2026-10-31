@@ -1,8 +1,9 @@
 // A folder: its folders first, then its pages and meetings, with New page / New folder inside it.
-import { FilePlus, FolderPlus, LayoutTemplate, Mic } from 'lucide-react';
+import { FilePlus, Folder, FolderPlus, LayoutTemplate, Mic } from 'lucide-react';
 import { openTemplates } from './Templates';
 import { useEffect, useRef, useState } from 'react';
-import { getPage, isTrashed, listPages, type Page } from '../lib/db';
+import { getPage, isTrashed, listPages, updatePage, type Page } from '../lib/db';
+import { ColorPicker } from './ColorPicker';
 import { EmptyState } from './brand';
 import { ItemCard } from './cards';
 import { go, useData, useRoute } from './common';
@@ -48,6 +49,10 @@ export function FolderView({ id }: { id: string }) {
         <div className="row"><PageMenu page={folder} /></div>
       </div>
       <div className="folder-head">
+        <span className={`folder-swatch ${folder.color ? `tile-${folder.color}` : ''}`}>
+          <ColorPicker value={folder.color} title="Folder colour" icon={<Folder size={20} />}
+            onPick={(c) => updatePage(folder.id, { color: c === 'default' ? undefined : c })} />
+        </span>
         <input
           ref={title}
           className="doc-title"

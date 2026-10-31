@@ -18,6 +18,7 @@ import { TEMPLATE_ICON } from './Templates';
 import { Mention, mentionItems } from './Mention';
 import { TEMPLATES } from '../lib/templates';
 import { floating } from '../lib/floating';
+import { useTheme } from '../lib/look';
 import { go, useData, useSyncValue } from './common';
 import { Crumbs, PageMenu } from './PageMenu';
 import { PageIcon } from './Sidebar';
@@ -175,6 +176,7 @@ function Editor({ page, editorRef }: { page: Page; editorRef: React.MutableRefOb
   });
   editorRef.current = editor;
   const look = useSettings();
+  const theme = useTheme(look.theme);
   const allPages = useData(listPages, []) ?? [];
   const byId = new Map(allPages.map((p) => [p.id, p]));
   const targets = allPages.filter((p) => p.kind === 'note' && p.id !== page.id && !isTrashed(p, byId)).sort((a, b) => b.updatedAt - a.updatedAt);
@@ -276,7 +278,8 @@ function Editor({ page, editorRef }: { page: Page; editorRef: React.MutableRefOb
     timer.current = window.setTimeout(save, 400);
   }, [editor, save]);
 
-  // Boards and tables may grow into the empty space to the right of the text, up to the window's edge.
+  // Boards and tables may grow into the empty space on both sides of the text, evenly, keeping a margin
+  // to the window's edges (and never wider than 1180px).
   const wrap = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = wrap.current;
@@ -285,7 +288,9 @@ function Editor({ page, editorRef }: { page: Page; editorRef: React.MutableRefOb
     const measure = () => {
       const text = el.querySelector('.bn-editor > .bn-block-group')?.getBoundingClientRect();
       const m = main.getBoundingClientRect();
-      if (text) el.style.setProperty('--bleed', `${Math.max(0, Math.min(560, m.left + main.clientWidth - 28 - text.right))}px`);
+      if (!text) return;
+      const room = Math.min(text.left - m.left, m.left + main.clientWidth - text.right) - 64;
+      el.style.setProperty('--bleed', `${Math.max(0, Math.min(room, (1180 - text.width) / 2))}px`);
     };
     measure();
     const ro = new ResizeObserver(measure);
@@ -305,7 +310,7 @@ function Editor({ page, editorRef }: { page: Page; editorRef: React.MutableRefOb
       }}
     >
       <BoardPage.Provider value={page.id}>
-      <BlockNoteView editor={editor} theme={look.theme === 'dark' ? 'dark' : 'light'} onChange={onChange} slashMenu={false} formattingToolbar={false} sideMenu={false}>
+      <BlockNoteView editor={editor} theme={theme === 'dark' ? 'dark' : 'light'} onChange={onChange} slashMenu={false} formattingToolbar={false} sideMenu={false}>
         <KipFormattingToolbar />
         <KipSideMenu pages={targets} onMove={moveTo} />
         <SuggestionMenuController triggerCharacter="@" getItems={(query) => mentionItems(editor, page.id, query)} />
