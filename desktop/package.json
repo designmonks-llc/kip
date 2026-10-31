@@ -1,8 +1,8 @@
 {
   "name": "kip",
   "productName": "Kip",
-  "version": "0.2.1",
-  "description": "Kip — calm notes and private meeting notes, on your Mac.",
+  "version": "0.2.2",
+  "description": "Kip \u2014 calm notes and private meeting notes, on your Mac.",
   "main": "main.js",
   "private": true,
   "scripts": {

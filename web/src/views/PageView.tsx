@@ -13,6 +13,9 @@ import { FILE_SCHEME, openStoredFile, resolveFileUrl, storeFile } from '../lib/f
 import { toasts } from '../lib/toast';
 import { KipFormattingToolbar, KipSideMenu, withoutIds } from './editorUi';
 import { ShareMenu } from './ShareMenu';
+import { BoardPage, emptyBoard, KanbanBlock, readBoard } from './Kanban';
+import { TEMPLATE_ICON } from './Templates';
+import { TEMPLATES } from '../lib/templates';
 import { floating } from '../lib/floating';
 import { go, useData, useSyncValue } from './common';
 import { Crumbs, PageMenu } from './PageMenu';
@@ -31,8 +34,8 @@ const shorthand = createExtension({
   ],
 });
 
-// Pages can hold columns (drag a block beside another, or /2 columns).
-const schema = withMultiColumn(BlockNoteSchema.create());
+// Pages can hold columns (drag a block beside another, or /2 columns) and Kanban boards.
+const schema = withMultiColumn(BlockNoteSchema.create()).extend({ blockSpecs: { kanban: KanbanBlock() } });
 type EditorApi = BlockNoteEditor<typeof schema.blockSchema, typeof schema.inlineContentSchema, typeof schema.styleSchema>;
 
 /** Files dropped or picked into a page are kept on this device (see lib/files.ts). */
@@ -60,7 +63,10 @@ export function PageView({ id }: { id: string }) {
   if (page.kind === 'meeting') return null;
 
   const byId = new Map(pages.map((p) => [p.id, p]));
-  const children = pages.filter((p) => p.parentId === id && !isTrashed(p, byId)).sort((a, b) => a.createdAt - b.createdAt);
+  // cards on this page's boards already show on the board, so they aren't listed again above it
+  const onBoard = new Set<string>();
+  walk((page.content ?? []) as B[], (b) => { if (b.type === 'kanban') readBoard(String(b.props?.data ?? '')).columns.forEach((c) => c.cards.forEach((k) => k.pageId && onBoard.add(k.pageId))); });
+  const children = pages.filter((p) => p.parentId === id && !isTrashed(p, byId) && !onBoard.has(p.id)).sort((a, b) => a.createdAt - b.createdAt);
   const isFloating = floating.isFloating({ kind: 'page', id });
 
   async function float() {
@@ -279,6 +285,7 @@ function Editor({ page, editorRef }: { page: Page; editorRef: React.MutableRefOb
         if (url?.startsWith(FILE_SCHEME)) { e.preventDefault(); openStoredFile(url); }
       }}
     >
+      <BoardPage.Provider value={page.id}>
       <BlockNoteView editor={editor} theme={look.theme === 'dark' ? 'dark' : 'light'} onChange={onChange} slashMenu={false} formattingToolbar={false} sideMenu={false}>
         <KipFormattingToolbar />
         <KipSideMenu pages={targets} onMove={moveTo} />
@@ -297,12 +304,27 @@ function Editor({ page, editorRef }: { page: Page; editorRef: React.MutableRefOb
                   onItemClick: async () => { await save(); await newPage(page.id); },
                 },
                 ...combineByGroup(getDefaultReactSlashMenuItems(editor), getMultiColumnSlashMenuItems(editor)),
+                // Templates drop their ready-made blocks in right here (a board starts with empty columns)
+                ...TEMPLATES.map((t) => ({
+                  title: t.name,
+                  subtext: t.about,
+                  aliases: ['template', t.id, ...t.name.toLowerCase().split(' ')],
+                  group: 'Templates',
+                  icon: TEMPLATE_ICON[t.id] as React.JSX.Element,
+                  onItemClick: () => {
+                    const at = editor.getTextCursorPosition().block;
+                    const blocks = t.blocks().map((b) => (b.type === 'kanban' ? { ...b, props: { data: JSON.stringify(emptyBoard()) } } : b));
+                    editor.insertBlocks(blocks as never, at, 'after');
+                    if (at.type === 'paragraph' && !blockText(at as B)) editor.removeBlocks([at]);
+                  },
+                })),
               ],
               query,
             )
           }
         />
       </BlockNoteView>
+      </BoardPage.Provider>
       {/* Clicking the empty space under the text puts the cursor at the end, like a page. */}
       <div
         className="editor-tail"

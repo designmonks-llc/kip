@@ -1,5 +1,6 @@
 // A folder: its folders first, then its pages and meetings, with New page / New folder inside it.
-import { FilePlus, FolderPlus, Mic } from 'lucide-react';
+import { FilePlus, FolderPlus, LayoutTemplate, Mic } from 'lucide-react';
+import { openTemplates } from './Templates';
 import { useEffect, useRef, useState } from 'react';
 import { getPage, isTrashed, listPages, type Page } from '../lib/db';
 import { EmptyState } from './brand';
@@ -59,6 +60,7 @@ export function FolderView({ id }: { id: string }) {
         <div className="row">
           <button className="primary" onClick={() => newPage(folder.id)}><FilePlus size={15} /> New page</button>
           <button onClick={() => go(`/new?folder=${folder.id}`)}><Mic size={15} /> New meeting</button>
+          <button onClick={() => openTemplates(folder.id)}><LayoutTemplate size={15} /> From template</button>
           <button onClick={() => newFolder(folder.id)}><FolderPlus size={15} /> New folder</button>
         </div>
       </div>

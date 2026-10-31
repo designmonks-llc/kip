@@ -4,6 +4,7 @@ import { resumeSession } from './lib/session';
 import { fmtDateTime } from './lib/recap';
 import { ErrorBoundary, ToastHost } from './views/Safety';
 import { UpdateBanner } from './views/Updates';
+import { TemplatesGallery } from './views/Templates';
 import { ClientView } from './views/ClientView';
 import { go, useRoute, useSession } from './views/common';
 import { FloatingHost } from './views/FloatingHost';
@@ -83,6 +84,7 @@ export function App() {
       </div>
       <FloatingHost />
       <ToastHost />
+      <TemplatesGallery />
     </div>
   );
 }

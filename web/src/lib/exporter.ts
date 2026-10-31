@@ -4,6 +4,8 @@ import { COLORS_DEFAULT, type BlockNoteEditor } from '@blocknote/core';
 import coreCss from '@blocknote/core/style.css?raw';
 import { docxDefaultSchemaMappings, DOCXExporter } from '@blocknote/xl-docx-exporter';
 import { domToJpeg, domToPng } from 'modern-screenshot';
+import { Paragraph, TextRun } from 'docx';
+import { boardLines, readBoard } from '../views/Kanban';
 import { blocksToMarkdown, walk, type B } from './blocks';
 import { desktop, fileAsDataUrl, FILE_SCHEME, getStoredFile, saveBlob } from './files';
 
@@ -27,7 +29,21 @@ async function portableBlocks(editor: Editor) {
     else b.props!.url = '';
   });
   await Promise.all(jobs);
-  return blocks;
+  return boardsAsColumns(blocks);
+}
+
+/** A board on paper: side-by-side columns, each its name and its cards. */
+function boardsAsColumns(blocks: B[]): B[] {
+  const id = () => crypto.randomUUID();
+  const style = { textColor: 'default', backgroundColor: 'default', textAlignment: 'left' };
+  return blocks.map((b) => b.type !== 'kanban' ? { ...b, children: boardsAsColumns(b.children ?? []) } : {
+    id: b.id ?? id(), type: 'columnList', props: {}, children: readBoard(String(b.props?.data ?? '')).columns.map((c) => ({
+      id: id(), type: 'column', props: { width: 1 }, children: [
+        { id: id(), type: 'heading', props: { ...style, level: 3, isToggleable: false }, content: [{ type: 'text', text: `${c.title} (${c.cards.length})`, styles: {} }], children: [] },
+        ...c.cards.map((k) => ({ id: id(), type: 'bulletListItem', props: style, content: [{ type: 'text', text: k.title, styles: {} }], children: [] })),
+      ],
+    })),
+  });
 }
 
 const DOC_CSS = `
@@ -43,6 +59,8 @@ const DOC_CSS = `
   .kip-doc img { max-width: 100%; height: auto; border-radius: 6px; }
   .kip-doc .bn-file-name-with-icon { display: inline-flex; gap: 8px; padding: 6px 10px; border: 1px solid #e1e9f2; border-radius: 8px; background: #f2f7fd; }
   .kip-doc .bn-add-file-button { display: none; }
+  .kip-doc .kanban-static { display: flex; gap: 12px; } .kip-doc .kanban-static .kb-col { flex: 1; padding: 10px 12px; border: 1px solid #e1e9f2; border-radius: 10px; background: #f6f9fd; }
+  .kip-doc .kanban-static h4 { margin: 0 0 6px; font-size: 13px; } .kip-doc .kanban-static ul { margin: 0; padding-left: 16px; font-size: 13px; }
   .kip-doc-foot { margin-top: 40px; padding-top: 14px; border-top: 1px solid #e1e9f2; font-size: 11px; color: #8a97ab; }
   @media print { .kip-doc { padding: 0; max-width: none; } .kip-doc-foot { display: none; } }
   [data-text-color="black"], [data-style-type="textColor"][data-value="black"] { color: #000; }
@@ -90,7 +108,10 @@ async function picture(html: string, kind: 'png' | 'jpg') {
 
 /** Word: BlockNote's own exporter, with Kip's files and colours. */
 async function word(editor: Editor, title: string) {
-  const exporter = new DOCXExporter(editor.schema as never, docxDefaultSchemaMappings as never, {
+  // boards go into Word as their columns and cards
+  const mappings = { ...docxDefaultSchemaMappings, blockMapping: { ...docxDefaultSchemaMappings.blockMapping,
+    kanban: (block: { props: { data: string } }) => boardLines(block.props.data).map((t, i, all) => new Paragraph({ children: [new TextRun({ text: t, bold: !t.startsWith('•') })], spacing: { after: i === all.length - 1 ? 200 : 40 } })) } };
+  const exporter = new DOCXExporter(editor.schema as never, mappings as never, {
     colors: KIP_COLORS,
     resolveFileUrl: async (url: string) => (url.startsWith(FILE_SCHEME) ? (await getStoredFile(url))?.blob ?? '' : url),
   });

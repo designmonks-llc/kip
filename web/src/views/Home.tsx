@@ -1,4 +1,5 @@
-import { CircleCheckBig, FileText, FolderPlus, ImageIcon, Mic, NotebookPen } from 'lucide-react';
+import { CircleCheckBig, FileText, FolderPlus, ImageIcon, LayoutTemplate, Mic, NotebookPen } from 'lucide-react';
+import { openTemplates } from './Templates';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { loadOpenActions } from '../lib/actions';
 import { coverFor, customCovers } from '../lib/covers';
@@ -124,7 +125,10 @@ export function Home() {
           )}
           <div className={`sec-head sec-head-row ${folders.length ? 'after-folders' : ''}`}>
             <div><p className="eyebrow-d">{folders.length ? 'Not in a folder' : 'Recent'}</p><h2>Jump back in</h2></div>
-            {folders.length === 0 && <button className="ghost" onClick={() => newFolder()} title="Group pages and meetings by project"><FolderPlus size={15} /> New folder</button>}
+            <span className="row">
+              <button className="ghost" onClick={() => openTemplates()} title="Kanban board, project tracker, meeting notes and more"><LayoutTemplate size={15} /> Templates</button>
+              {folders.length === 0 && <button className="ghost" onClick={() => newFolder()} title="Group pages and meetings by project"><FolderPlus size={15} /> New folder</button>}
+            </span>
           </div>
           {pages && recent.length === 0 ? (
             <div className="recent-empty">
