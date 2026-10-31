@@ -25,7 +25,7 @@ navigator.storage?.persist?.().catch(() => {});
 // database is held by an older Kip tab, the page says so (and opens by itself once it's closed).
 const rootEl = document.getElementById('root')!;
 const bootNote = (title: string, text: string) => {
-  rootEl.innerHTML = `<div class="boot"><b class="boot-logo">kip</b><h1>${title}</h1><p>${text}</p></div>`;
+  rootEl.innerHTML = `<div class="boot"><svg class="boot-logo" role="img" aria-label="Kip" viewBox="0 0 9 4" shape-rendering="crispEdges"><path fill="currentColor" d="M0 0h1v1h-1zM2 0h1v1h-1zM4 0h1v1h-1zM6 0h3v1h-3zM0 1h2v1h-2zM6 1h1v1h-1zM8 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h3v1h-3zM0 3h1v1h-1zM2 3h1v1h-1zM4 3h3v1h-3z"/></svg><h1>${title}</h1><p>${text}</p></div>`;
 };
 const waitingNote = () => bootNote('Kip was just updated', 'Close any other Kip tabs and floating notes, and Kip will open here by itself. Your notes are safe.');
 dbEvents.onBlocked = waitingNote;

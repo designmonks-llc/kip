@@ -5,12 +5,14 @@ import { mosaicTiles, type Art } from '../lib/art';
 import { addCustomCover, allCovers, customCovers, removeCustomCover } from '../lib/covers';
 import { toasts } from '../lib/toast';
 
-/** The Kip logotype: lowercase, with a square "pixel" for the dot of the i. */
+/** The Kip wordmark: a 9 x 4 grid of square pixels (brand/kip-logo.svg). `size` is roughly the old type size. */
+export const LOGO_PATH = 'M0 0h1v1h-1zM2 0h1v1h-1zM4 0h1v1h-1zM6 0h3v1h-3zM0 1h2v1h-2zM6 1h1v1h-1zM8 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h3v1h-3zM0 3h1v1h-1zM2 3h1v1h-1zM4 3h3v1h-3z';
 export function Logo({ size = 22 }: { size?: number }) {
+  const h = Math.round(size * 0.72);
   return (
-    <span className="logo" style={{ fontSize: size }} aria-label="Kip">
-      k<span className="logo-i">ı<i /></span>p
-    </span>
+    <svg className="logo" role="img" aria-label="Kip" viewBox="0 0 9 4" height={h} width={(h * 9) / 4} shapeRendering="crispEdges">
+      <path fill="currentColor" d={LOGO_PATH} />
+    </svg>
   );
 }
 

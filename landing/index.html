@@ -56,10 +56,9 @@
   .rv { opacity: 0; transform: translateY(28px); transition: opacity 1.1s var(--ease), transform 1.1s var(--ease); transition-delay: calc(var(--d, 0) * 90ms); }
   .rv.in { opacity: 1; transform: none; }
 
-  /* logotype: lowercase, square pixel dot on the i */
-  .logo { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.045em; line-height: 1; display: inline-flex; align-items: baseline; font-size: 24px; color: var(--ink); }
-  .logo-i { position: relative; display: inline-block; }
-  .logo-i i { position: absolute; left: 50%; top: -0.04em; width: .17em; height: .17em; transform: translateX(-50%); background: var(--blue); border-radius: 1px; }
+  /* wordmark: a 9 x 4 grid of square pixels; font-size sets its scale */
+  .logo { display: inline-flex; font-size: 24px; color: var(--deep); }
+  .logo svg { display: block; height: .74em; width: auto; overflow: visible; }
 
   /* buttons */
   .btn { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 52px; padding: 0 24px; border-radius: 999px; font: 600 15px/1 var(--font-ui); border: 0; cursor: pointer; white-space: nowrap;
@@ -79,8 +78,8 @@
   .loader canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
   .loader-mark { position: relative; display: grid; justify-items: center; gap: 22px; transition: opacity .35s, transform .5s var(--ease); }
   .loader .logo { font-size: 40px; }
-  .loader .logo-i i { animation: hop 1.1s var(--ease) infinite; }
-  @keyframes hop { 0%, 60%, 100% { transform: translate(-50%, 0); } 30% { transform: translate(-50%, -0.32em); } }
+  .loader .logo .dot { animation: hop 1.1s var(--ease) infinite; }
+  @keyframes hop { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-.6px); } }
   .loader-bar { width: 120px; height: 2px; border-radius: 2px; background: var(--sky-100); overflow: hidden; }
   .loader-bar i { display: block; height: 100%; width: 0; background: var(--blue); transition: width 2.6s cubic-bezier(.1, .6, .2, 1); }
   .loader.opening { background: transparent; }
@@ -396,7 +395,8 @@
   /* small drawings of what they'll see */
   .mock { height: 92px; border-radius: 14px; background: #fff; box-shadow: inset 0 0 0 1px var(--line); display: flex; align-items: center; justify-content: center; font-size: 11.5px; color: var(--ink-2); overflow: hidden; }
   .m-drag { gap: 14px; }
-  .m-drag .app { position: relative; width: 50px; height: 50px; display: grid; place-items: center; border-radius: 12px; background: var(--sky-50); box-shadow: inset 0 0 0 1px var(--sky-200); font: 400 19px/1 var(--font-display); color: var(--deep); animation: drag 3.2s var(--ease) infinite; }
+  .m-drag .app { position: relative; width: 50px; height: 50px; display: grid; place-items: center; border-radius: 12px; background: var(--sky-50); box-shadow: inset 0 0 0 1px var(--sky-200); color: var(--deep); animation: drag 3.2s var(--ease) infinite; }
+  .m-drag .app svg { width: 32px; height: auto; }
   .m-drag .arrow { width: 40px; height: 2px; background: repeating-linear-gradient(90deg, var(--sky-300) 0 4px, transparent 4px 8px); position: relative; }
   .m-drag .arrow::after { content: ''; position: absolute; right: -2px; top: -4px; border: 5px solid transparent; border-left-color: var(--sky-300); }
   .m-drag .folder { width: 54px; height: 42px; border-radius: 6px 8px 8px 8px; background: var(--sky-300); position: relative; }
@@ -487,11 +487,11 @@
 
 <div class="loader" id="loader" aria-hidden="true">
   <canvas id="loaderArt"></canvas>
-  <div class="loader-mark"><span class="logo">k<span class="logo-i">ı<i></i></span>p</span><div class="loader-bar"><i id="loadBar"></i></div></div>
+  <div class="loader-mark"><span class="logo"><svg viewBox="0 0 9 4" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M0 0h1v1h-1zM2 0h1v1h-1zM6 0h3v1h-3zM0 1h2v1h-2zM6 1h1v1h-1zM8 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h3v1h-3zM0 3h1v1h-1zM2 3h1v1h-1zM4 3h3v1h-3z"/><rect class="dot" x="4" y="0" width="1" height="1" fill="currentColor"/></svg></span><div class="loader-bar"><i id="loadBar"></i></div></div>
 </div>
 
 <header class="nav" id="nav">
-  <a href="#top" class="logo" aria-label="Kip home">k<span class="logo-i">ı<i></i></span>p</a>
+  <a href="#top" class="logo" aria-label="Kip home"><svg viewBox="0 0 9 4" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M0 0h1v1h-1zM2 0h1v1h-1zM6 0h3v1h-3zM0 1h2v1h-2zM6 1h1v1h-1zM8 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h3v1h-3zM0 3h1v1h-1zM2 3h1v1h-1zM4 3h3v1h-3z"/><rect class="dot" x="4" y="0" width="1" height="1" fill="currentColor"/></svg></a>
   <nav class="nav-links" aria-label="Main">
     <span class="nav-ind" id="navInd"></span>
     <a href="#how">How it works</a><a href="#features">Features</a><a href="#privacy">Privacy</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a><a href="#updates">Updates</a>
@@ -622,7 +622,7 @@
       <div class="ws rv" id="ws" data-look="light">
         <div class="ws-bg" id="wsBg"></div>
         <div class="ws-side">
-          <div class="logo">k<span class="logo-i">ı<i></i></span>p</div>
+          <div class="logo" aria-label="Kip"><svg viewBox="0 0 9 4" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M0 0h1v1h-1zM2 0h1v1h-1zM6 0h3v1h-3zM0 1h2v1h-2zM6 1h1v1h-1zM8 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h3v1h-3zM0 3h1v1h-1zM2 3h1v1h-1zM4 3h3v1h-3z"/><rect class="dot" x="4" y="0" width="1" height="1" fill="currentColor"/></svg></div>
           <div class="ws-row">Home</div><div class="ws-row">Open actions</div>
           <div class="ws-h">Pages</div>
           <div class="ws-row sel"><i></i>Product ideas</div><div class="ws-row"><i></i>Reading list</div><div class="ws-row"><i></i>Trip to Sylhet</div>
@@ -745,7 +745,7 @@
   <!-- FOOTER -->
   <footer class="end">
     <div class="wrap">
-      <div class="mark"><canvas id="markArt" aria-label="kip"></canvas></div>
+      <div class="mark"><canvas id="markArt" role="img" aria-label="Kip"></canvas></div>
       <div class="foot">
         <span>© 2026 Kip · Made for calm meetings</span>
         <nav aria-label="Footer"><a href="#privacy">Privacy</a><a href="#faq">FAQ</a><a href="#updates">Release notes</a><a href="mailto:hello@example.com">Contact</a></nav>
@@ -765,7 +765,7 @@
     <li>
       <span class="n">1</span>
       <div class="st"><b>Drag Kip into Applications</b><p>Open the downloaded <code>Kip-arm64.dmg</code> and drag Kip onto the Applications folder.</p></div>
-      <div class="mock m-drag" aria-hidden="true"><span class="app">kıp<i></i></span><span class="arrow"></span><span class="folder"></span></div>
+      <div class="mock m-drag" aria-hidden="true"><span class="app"><svg viewBox="0 0 9 4" shape-rendering="crispEdges"><path fill="currentColor" d="M0 0h1v1h-1zM2 0h1v1h-1zM4 0h1v1h-1zM6 0h3v1h-3zM0 1h2v1h-2zM6 1h1v1h-1zM8 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h3v1h-3zM0 3h1v1h-1zM2 3h1v1h-1zM4 3h3v1h-3z"/></svg></span><span class="arrow"></span><span class="folder"></span></div>
     </li>
     <li>
       <span class="n">2</span>
@@ -793,7 +793,7 @@
 <script>
 // ---- Release info: the page reads everything about the download from here ----
 // `url` always points at the newest GitHub Release, so new versions need no change here.
-const RELEASE = { version: '0.1.1', macos: 'macOS 14 or later', chips: 'Apple silicon', url: 'https://github.com/designmonks-llc/kip/releases/latest/download/Kip-arm64.dmg' };
+const RELEASE = { version: '0.1.2', macos: 'macOS 14 or later', chips: 'Apple silicon', url: 'https://github.com/designmonks-llc/kip/releases/latest/download/Kip-arm64.dmg' };
 // The browser version of Kip.
 const WEB_APP = 'https://kip-app-five.vercel.app/';
 
@@ -1390,26 +1390,19 @@ $$('canvas.field').forEach((cv) => pixelField(cv, cv.parentElement, soft()));
   const mark = pixelField($('#markArt'), $('.mark'), {
     step: (W) => (W < 600 ? 7 : 11), radius: (W) => clamp(W * 0.1, 70, 150), push: 3, grow: 0.5, lift: 0.3, dpr: 2,
     setup(cols, rows) {
-      const c = document.createElement('canvas'), x = c.getContext('2d', { willReadFrequently: true });
-      c.width = cols; c.height = rows;
-      x.font = `500 100px ${getComputedStyle(document.body).getPropertyValue('--font-display')}`;
-      const m = x.measureText('kıp'), w = m.width, h = m.actualBoundingBoxAscent + m.actualBoundingBoxDescent;
-      const fs = 100 * Math.min((cols * 0.9) / w, (rows * 0.92) / h);
-      x.font = `500 ${fs}px ${getComputedStyle(document.body).getPropertyValue('--font-display')}`;
-      const mm = x.measureText('kıp'), left = (cols - mm.width) / 2, base = (rows + mm.actualBoundingBoxAscent - mm.actualBoundingBoxDescent) / 2;
-      x.fillStyle = '#000'; x.fillText('kıp', left, base);
-      // the square blue dot over the ı, as in the logo
-      const kx = x.measureText('k').width, iw = x.measureText('ı').width, xh = x.measureText('x').actualBoundingBoxAscent, d = fs * 0.12;
-      const data = x.getImageData(0, 0, cols, rows).data;
+      // the wordmark's own 9 x 4 grid, scaled up to fill the strip; every logo square becomes a block of field cells
+      const LOGO = ['X.X.X.XXX', 'XX....X.X', 'X.XXX.XXX', 'X.X.XXX..'];
+      const u = Math.max(1, Math.floor(Math.min((cols * 0.9) / 9, (rows * 0.9) / 4)));
+      const left = Math.round((cols - 9 * u) / 2), top = Math.round((rows - 4 * u) / 2);
       mask = new Uint8Array(cols * rows);
-      for (let n = 0; n < mask.length; n++) mask[n] = data[n * 4 + 3] > 110 ? 1 : 0;
-      const dcx = left + kx + iw / 2, dcy = base - xh - fs * 0.09 - d / 2;
-      for (let j = Math.floor(dcy - d / 2); j < dcy + d / 2; j++) for (let i = Math.floor(dcx - d / 2); i < dcx + d / 2; i++) if (i >= 0 && j >= 0 && i < cols && j < rows) mask[j * cols + i] = 2;
+      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+        const c = Math.floor((i - left) / u), r = Math.floor((j - top) / u);
+        if (c >= 0 && c < 9 && r >= 0 && r < 4 && LOGO[r][c] === 'X') mask[j * cols + i] = 1;
+      }
     },
     look(n, i, j, t, out) {
       const m = mask[n];
       if (m === 1) { out.s = 0.82; out.a = 1; out.c = '18,48,122'; out.k = 0.16; }
-      else if (m === 2) { out.s = 0.82; out.a = 1; out.c = '42,99,212'; out.k = 0.16; }
       else { out.s = 0.16; out.a = 0.07; out.c = '18,48,122'; out.k = 0.08; }
     },
     hot: null,
