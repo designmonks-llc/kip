@@ -1,5 +1,5 @@
 import {
-  Building2, ChevronDown, ChevronRight, CircleCheckBig, FileText, House, Mic, MoreHorizontal, NotebookPen, Plus, Search, Settings, Star, Trash2,
+  Building2, ChevronDown, ChevronRight, CircleCheckBig, FileText, Folder, FolderOpen, FolderPlus, House, Mic, MoreHorizontal, NotebookPen, Plus, Search, Settings, Star, Trash2,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { loadOpenActions } from '../lib/actions';
@@ -7,10 +7,11 @@ import { isTrashed, listClients, listPages, type Page } from '../lib/db';
 import { go, useData, useRoute, useSession } from './common';
 import { PageActionsMenu, renamePage } from './PageActions';
 import { Logo } from './brand';
-import { ancestors, descendantIds, movePage, trashWithUndo, newPage, pageHref, pageTitle, quickNote, tree, type DropPos } from './workspace';
+import { ancestors, descendantIds, movePage, trashWithUndo, newFolder, newPage, pageHref, pageTitle, quickNote, tree, type DropPos } from './workspace';
 
 const ICON = 15;
-export const PageIcon = ({ p }: { p: Page }) => (p.kind === 'meeting' ? <Mic size={ICON} /> : <FileText size={ICON} />);
+export const PageIcon = ({ p, open }: { p: Page; open?: boolean }) =>
+  p.kind === 'meeting' ? <Mic size={ICON} /> : p.kind === 'folder' ? (open ? <FolderOpen size={ICON} /> : <Folder size={ICON} />) : <FileText size={ICON} />;
 
 export function Sidebar() {
   const route = useRoute();
@@ -27,6 +28,7 @@ export function Sidebar() {
   const byId = useMemo(() => new Map(pages.map((p) => [p.id, p])), [pages]);
   const live = useMemo(() => pages.filter((p) => !isTrashed(p, byId)), [pages, byId]);
   const kids = useMemo(() => tree(live), [live]);
+  const rootFolders = (kids.get(undefined) ?? []).filter((p) => p.kind === 'folder');
   const roots = (kids.get(undefined) ?? []).filter((p) => p.kind === 'note');
   const looseMeetings = (kids.get(undefined) ?? []).filter((p) => p.kind === 'meeting').sort((a, b) => b.createdAt - a.createdAt).slice(0, 8);
   const pinned = live.filter((p) => p.pinned);
@@ -36,7 +38,7 @@ export function Sidebar() {
   // Which page is open (meeting pages are routed by meeting id).
   const [path] = route.split('?');
   const parts = path.split('/').filter(Boolean);
-  const currentId = parts[0] === 'p' ? parts[1] : parts[0] === 'm' ? pages.find((p) => p.meetingId === parts[1])?.id : undefined;
+  const currentId = parts[0] === 'p' || parts[0] === 'f' ? parts[1] : parts[0] === 'm' ? pages.find((p) => p.meetingId === parts[1])?.id : undefined;
 
   useEffect(() => { if (parts[0] !== 'search') setQ(''); }, [parts[0]]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -66,8 +68,9 @@ export function Sidebar() {
     if (!drag || blocked.has(p.id)) return null;
     const r = e.currentTarget.getBoundingClientRect();
     const y = (e.clientY - r.top) / r.height;
-    // Only notes can hold other pages; meetings take neighbours only.
-    if (p.kind === 'note' && y > 0.28 && y < 0.72) return 'inside';
+    // Folders hold anything; notes hold pages and meetings (not folders); meetings take neighbours only.
+    if ((p.kind === 'folder' || (p.kind === 'note' && drag.kind !== 'folder')) && y > 0.28 && y < 0.72) return 'inside';
+    if (drag.kind === 'folder' && p.kind !== 'folder') return null; // folders sit among folders
     return y < 0.5 ? 'before' : 'after';
   }
   const dragProps = (p: Page) => ({
@@ -110,7 +113,8 @@ export function Sidebar() {
   });
 
   function row(p: Page, depth: number, opts: { pinnedRow?: boolean } = {}) {
-    const children = opts.pinnedRow ? [] : kids.get(p.id) ?? [];
+    // inside a folder: its folders first, then pages and meetings
+    const children = opts.pinnedRow ? [] : [...(kids.get(p.id) ?? [])].sort((a, b) => Number(b.kind === 'folder') - Number(a.kind === 'folder'));
     const isOpen = open.has(p.id);
     const key = (opts.pinnedRow ? 'pin-' : '') + p.id;
     const menuOpen = menu?.page.id === p.id;
@@ -138,7 +142,7 @@ export function Sidebar() {
             />
           ) : (
             <span className="tree-title" onClick={() => go(pageHref(p))} onDoubleClick={() => setRenaming(key)} title={pageTitle(p)}>
-              <span className="kind">{opts.pinnedRow ? <Star size={ICON} /> : <PageIcon p={p} />}</span>
+              <span className="kind">{opts.pinnedRow ? <Star size={ICON} /> : <PageIcon p={p} open={isOpen && children.length > 0} />}</span>
               <span className="tree-label">{pageTitle(p)}</span>
             </span>
           )}
@@ -151,8 +155,8 @@ export function Sidebar() {
           >
             <MoreHorizontal size={ICON} />
           </button>
-          {p.kind === 'note' && !opts.pinnedRow && (
-            <button className="icon-btn row-btn" title="Add a page inside" aria-label="Add a page inside"
+          {(p.kind === 'note' || p.kind === 'folder') && !opts.pinnedRow && (
+            <button className="icon-btn row-btn" title={p.kind === 'folder' ? 'New page in this folder' : 'Add a page inside'} aria-label="Add a page inside"
               onClick={async () => { setOpen((o) => new Set([...o, p.id])); await newPage(p.id); }}>
               <Plus size={ICON} />
             </button>
@@ -197,7 +201,13 @@ export function Sidebar() {
         </>
       )}
 
-      <h4 className={`side-h ${over === 'root' ? 'drop-zone' : ''}`} {...zone('root')} title="Drop here to move a page to the top level">Pages</h4>
+      <h4 className="side-h side-h-row">Folders
+        <button className="icon-btn" title="New folder" aria-label="New folder" onClick={() => newFolder()}><FolderPlus size={14} /></button>
+      </h4>
+      {rootFolders.length === 0 && <p className="muted small side-pad">Group pages and meetings by project.</p>}
+      {rootFolders.map((p) => row(p, 0))}
+
+      <h4 className={`side-h ${over === 'root' ? 'drop-zone' : ''}`} {...zone('root')} title="Drop here to move a page out of its folder">Pages</h4>
       {roots.length === 0 && <p className="muted small side-pad">No pages yet.</p>}
       {roots.map((p) => row(p, 0))}
 

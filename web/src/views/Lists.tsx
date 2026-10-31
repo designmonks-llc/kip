@@ -94,7 +94,7 @@ export function TrashView() {
               <span className="row-icon"><PageIcon p={p} /></span>
               <span className="row-main">
                 <span className="row-title">{pageTitle(p)}</span>
-                <span className="row-meta">{p.kind === 'meeting' ? 'Meeting' : 'Page'} · deleted {ago(p.trashedAt!)}</span>
+                <span className="row-meta">{p.kind === 'meeting' ? 'Meeting' : p.kind === 'folder' ? 'Folder and everything in it' : 'Page'} · deleted {ago(p.trashedAt!)}</span>
               </span>
               <span className="row-actions">
                 <button onClick={() => restorePage(p.id)}><RotateCcw size={14} /> Restore</button>

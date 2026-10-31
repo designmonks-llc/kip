@@ -1,17 +1,63 @@
 // Workspace actions shared by the sidebar, home and keyboard shortcuts.
 import { blocksToText } from '../lib/blocks';
-import { createPage, deleteForever, getPage, listPages, restorePage, trashPage, updatePage, type Page } from '../lib/db';
+import { createPage, deleteForever, getPage, isTrashed, listPages, restorePage, trashPage, updatePage, type Page } from '../lib/db';
 import { toasts } from '../lib/toast';
 import { floating } from '../lib/floating';
 import { go } from './common';
 
-export const pageHref = (p: Page) => (p.kind === 'meeting' && p.meetingId ? `/m/${p.meetingId}` : `/p/${p.id}`);
+export const pageHref = (p: Page) => (p.kind === 'meeting' && p.meetingId ? `/m/${p.meetingId}` : p.kind === 'folder' ? `/f/${p.id}` : `/p/${p.id}`);
 export const pageTitle = (p: Page) => p.title.trim() || 'Untitled';
 
 export async function newPage(parentId?: string) {
   const p = await createPage({ parentId });
   go(`/p/${p.id}`);
   return p;
+}
+
+/** A new folder (inside another folder, or at the top), opened so it can be named. */
+export async function newFolder(parentId?: string) {
+  const f = await createPage({ kind: 'folder', title: 'New folder', parentId });
+  go(`/f/${f.id}?rename=1`);
+  return f;
+}
+
+/** The top folder an item lives in, if any. */
+export function topFolder(p: Page, byId: Map<string, Page>) {
+  return ancestors(p, byId).find((a) => a.kind === 'folder');
+}
+
+/**
+ * Where an item can be moved: folders hold anything; pages hold pages and meetings, not folders.
+ * Never into itself or something inside it. Depth-first, for indented lists.
+ */
+export function moveTargets(item: Page, pages: Page[]) {
+  const byId = new Map(pages.map((p) => [p.id, p]));
+  const blocked = descendantIds(item.id, pages);
+  const ok = (p: Page) => !blocked.has(p.id) && !isTrashed(p, byId) && (p.kind === 'folder' || (p.kind === 'note' && item.kind !== 'folder'));
+  const kids = tree(pages.filter((p) => p.kind === 'folder' || p.kind === 'note'));
+  const out: { p: Page; depth: number }[] = [];
+  const visit = (parent: string | undefined, depth: number) => {
+    for (const p of kids.get(parent) ?? []) {
+      if (blocked.has(p.id) || isTrashed(p, byId)) continue;
+      if (ok(p)) out.push({ p, depth });
+      visit(p.id, depth + 1);
+    }
+  };
+  visit(undefined, 0);
+  return out;
+}
+
+/** What's in a folder (all levels): pages, meetings, folders, and when anything in it last changed. */
+export function folderStats(folder: Page, pages: Page[]) {
+  const ids = descendantIds(folder.id, pages);
+  ids.delete(folder.id);
+  const inside = pages.filter((p) => ids.has(p.id) && !p.trashedAt);
+  return {
+    pages: inside.filter((p) => p.kind === 'note').length,
+    meetings: inside.filter((p) => p.kind === 'meeting').length,
+    folders: inside.filter((p) => p.kind === 'folder').length,
+    updatedAt: Math.max(folder.updatedAt, ...inside.map((p) => p.updatedAt)),
+  };
 }
 
 /** A blank note that opens straight into the floating window. */

@@ -7,7 +7,7 @@ import { PageHeader } from './ui';
 
 const CONSENT_LINE = "Heads up: I'm taking notes with a private on-device assistant. Nothing is recorded or uploaded.";
 
-export function StartMeeting({ client = '' }: { client?: string }) {
+export function StartMeeting({ client = '', folder }: { client?: string; folder?: string }) {
   const st = settings();
   const clients = useData(listClients, []);
   const [title, setTitle] = useState('');
@@ -24,7 +24,7 @@ export function StartMeeting({ client = '' }: { client?: string }) {
     setError('');
     setBusy('setup');
     try {
-      await startSession({ title, clientName, language, listening, readScreen }, setBusy);
+      await startSession({ title, clientName, language, listening, readScreen, folderId: folder }, setBusy);
       if (listening !== 'off' && !st.consentShown) saveSettings({ consentShown: true });
       go('/live');
     } catch (err) {

@@ -15,6 +15,7 @@ import { Recap } from './views/Recap';
 import { SettingsView } from './views/SettingsView';
 import { Sidebar } from './views/Sidebar';
 import { StartMeeting } from './views/StartMeeting';
+import { FolderView } from './views/FolderView';
 import { quickNote } from './views/workspace';
 import { floating } from './lib/floating';
 import { applyLook } from './lib/look';
@@ -56,7 +57,8 @@ export function App() {
 
   let view: React.ReactNode;
   if (parts[0] === 'live') view = <Live />;
-  else if (parts[0] === 'new') view = s ? <Live /> : <StartMeeting client={params.get('client') ?? ''} />;
+  else if (parts[0] === 'new') view = s ? <Live /> : <StartMeeting client={params.get('client') ?? ''} folder={params.get('folder') ?? undefined} />;
+  else if (parts[0] === 'f' && parts[1]) view = <FolderView id={parts[1]} />;
   else if (parts[0] === 'p' && parts[1]) view = <PageView id={parts[1]} />;
   else if (parts[0] === 'm' && parts[1]) view = <Recap id={parts[1]} />;
   else if (parts[0] === 'c' && parts[1]) view = <ClientView id={parts[1]} />;

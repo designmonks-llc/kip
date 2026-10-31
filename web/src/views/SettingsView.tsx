@@ -1,6 +1,8 @@
-import { Copy, Moon, Sparkles, Sun, Trash2 } from 'lucide-react';
+import { Archive, Copy, Moon, RotateCcw, Sparkles, Sun, Trash2, Upload } from 'lucide-react';
 import { useState } from 'react';
+import { backupName, listAutoBackups, makeBackup, restoreAutoBackup, restoreBackup, type RestoreSummary } from '../lib/backup';
 import { clearErrors, readErrors } from '../lib/errlog';
+import { desktop, saveBlob } from '../lib/files';
 import { toasts } from '../lib/toast';
 import { deleteEverything, saveSettings, type Language, type ListeningMode, type Settings } from '../lib/db';
 import { summarizerAvailability } from '../lib/summarize';
@@ -90,6 +92,8 @@ export function SettingsView() {
 
       <Diagnostics />
 
+      {desktop()?.setMenuBarIcon && <MacCard />}
+      <BackupCard />
       <SetCard title="Privacy & data" tone="danger">
         <SetRow label="Everything stays here" desc="Notes, meetings and transcripts live only in this browser. Audio is never saved, only text." />
         <SetRow label="Delete all data" desc="Removes every page, meeting and client. This can’t be undone.">
@@ -122,6 +126,68 @@ function Diagnostics() {
             </span>
           </>
         )}
+      </SetRow>
+    </SetCard>
+  );
+}
+
+/** Back up everything to one .kip file, restore one, or roll back to the copy taken before an update. */
+function BackupCard() {
+  const autos = useData(listAutoBackups, []);
+  const [busy, setBusy] = useState('');
+  const say = (r: RestoreSummary) =>
+    toasts.show(r.added ? `Restored: ${r.added} item${r.added === 1 ? '' : 's'} brought back${r.kept ? `, ${r.kept} newer ones kept` : ''}.` : 'Everything in that backup is already here.');
+  const pick = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.kip,application/zip';
+    input.onchange = async () => {
+      const f = input.files?.[0];
+      if (!f) return;
+      setBusy('restore');
+      try {
+        const preview = await restoreBackup(f, true);
+        if (!confirm(`Restore “${f.name}”?\n\n${preview.pages} pages, ${preview.meetings} meetings, ${preview.files} files.\nNothing here is deleted; where both have the same page, the newer one is kept.`)) return;
+        say(await restoreBackup(f));
+      } catch (e) {
+        toasts.show((e as Error).message);
+      } finally {
+        setBusy('');
+      }
+    };
+    input.click();
+  };
+  return (
+    <SetCard title="Backup">
+      <SetRow label="Back up everything" desc="All pages, meetings, clients, settings and attached files in one .kip file. Keep it somewhere safe, or move Kip to another Mac.">
+        <button disabled={!!busy} onClick={async () => { setBusy('backup'); try { saveBlob(await makeBackup(), backupName()); } finally { setBusy(''); } }}>
+          <Archive size={14} /> {busy === 'backup' ? 'Packing…' : 'Back up'}
+        </button>
+      </SetRow>
+      <SetRow label="Restore from a backup" desc="Brings back anything missing from a .kip file. Nothing is deleted, and newer pages are kept.">
+        <button disabled={!!busy} onClick={pick}><Upload size={14} /> {busy === 'restore' ? 'Restoring…' : 'Restore'}</button>
+      </SetRow>
+      <SetRow label="Before each update" desc={autos?.length ? 'Kip kept a copy of your notes before these updates opened them:' : 'Kip keeps a copy of your notes before a new version opens them. None yet.'} stacked={!!autos?.length}>
+        {autos?.map((b) => (
+          <span key={b.id} className="row">
+            <span className="small">{new Date(b.createdAt).toLocaleString()} · from {b.version}</span>
+            <button disabled={!!busy} onClick={async () => { if (confirm('Bring back anything from this copy that is missing now? Nothing is deleted.')) say(await restoreAutoBackup(b.id)); }}><RotateCcw size={14} /> Restore</button>
+          </span>
+        ))}
+      </SetRow>
+    </SetCard>
+  );
+}
+
+/** Mac-only: the Kip icon in the menu bar (click it for a floating quick note). */
+function MacCard() {
+  const on = useData(async () => (await desktop()?.getMenuBarIcon?.()) ?? true, []);
+  const [value, setValue] = useState<boolean | undefined>(undefined);
+  const shown = value ?? on ?? true;
+  return (
+    <SetCard title="Mac">
+      <SetRow label="Kip in the menu bar" desc="A Kip icon at the top of your screen. Click it for a floating quick note from any app; right-click for more.">
+        <Switch label="Kip in the menu bar" checked={shown} onChange={async (v) => { setValue(v); await desktop()?.setMenuBarIcon?.(v); }} />
       </SetRow>
     </SetCard>
   );

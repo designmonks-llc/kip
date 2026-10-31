@@ -37,7 +37,8 @@ export interface Page {
   id: string;
   parentId?: string;
   title: string;
-  kind: 'note' | 'meeting';
+  /** A folder only holds other items (pages, meetings, folders); it has no text of its own. */
+  kind: 'note' | 'meeting' | 'folder';
   meetingId?: string;
   content?: unknown[]; // BlockNote blocks (notes only)
   pinned?: boolean;
@@ -89,10 +90,16 @@ interface Schema extends DBSchema {
   settings: { key: string; value: Settings };
   pages: { key: string; value: Page; indexes: { meetingId: string } };
   covers: { key: string; value: CustomCover };
+  files: { key: string; value: StoredFile };
+  backups: { key: string; value: AutoBackup };
 }
 
 /** A cover image the user added (resized, stored only in this browser). */
 export interface CustomCover { id: string; name: string; blob: Blob; w: number; h: number; createdAt: number }
+/** A file attached to a page (PDF, image, anything up to 200 MB), stored only on this device. */
+export interface StoredFile { id: string; name: string; type: string; size: number; blob: Blob; createdAt: number }
+/** A copy of everything except file contents, taken automatically before a new version first opens the notes. */
+export interface AutoBackup { id: string; version: string; createdAt: number; data: unknown }
 
 type PerMeeting = 'lines' | 'segments' | 'marks' | 'captures';
 const PER_MEETING: PerMeeting[] = ['lines', 'segments', 'marks', 'captures'];
@@ -103,7 +110,7 @@ let dbp: Promise<IDBPDatabase<Schema>> | null = null;
 export const dbEvents = { onBlocked: () => {} };
 
 export function db() {
-  dbp ??= openDB<Schema>('meeting-sticky', 3, {
+  dbp ??= openDB<Schema>('meeting-sticky', 4, {
     async upgrade(d, oldVersion, _newVersion, tx) {
       if (oldVersion < 1) {
         d.createObjectStore('clients', { keyPath: 'id' });
@@ -122,6 +129,11 @@ export function db() {
         }
       }
       if (oldVersion < 3) d.createObjectStore('covers', { keyPath: 'id' }); // v3: your own cover images
+      // v4: files on pages, and automatic backups. Only new stores: nothing that exists is touched.
+      if (oldVersion < 4) {
+        d.createObjectStore('files', { keyPath: 'id' });
+        d.createObjectStore('backups', { keyPath: 'id' });
+      }
     },
     // Another Kip tab still has the old version open: say so instead of waiting silently.
     blocked: () => dbEvents.onBlocked(),

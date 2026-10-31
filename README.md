@@ -41,3 +41,11 @@ cd desktop && npm install && npm run dist
 ```
 
 Requires Node 20 or later. See [`desktop/README.md`](desktop/README.md) for permissions and signing.
+
+## Licence
+
+Kip is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License,
+version 3 or (at your option) any later version. See [LICENSE](LICENSE).
+
+Copyright © 2026 DesignMonks LLC. Kip's editor uses [BlockNote](https://www.blocknotejs.org), including its
+GPL-3.0 multi-column and Word-export packages.

@@ -12,6 +12,8 @@ import { transcriber } from './transcriber';
 export interface StartOptions {
   title: string;
   clientName: string;
+  /** The folder the meeting's page goes in (started from inside a folder). */
+  folderId?: string;
   language: Language;
   listening: ListeningMode;
   readScreen: boolean;
@@ -55,7 +57,7 @@ export class Session {
       readScreen: o.readScreen,
     };
     await put('meetings', this.meeting);
-    await createPage({ kind: 'meeting', meetingId: this.meeting.id, title: this.meeting.title, createdAt: this.meeting.startedAt });
+    await createPage({ kind: 'meeting', meetingId: this.meeting.id, title: this.meeting.title, createdAt: this.meeting.startedAt, parentId: o.folderId });
     if (this.client) this.openItems = await openItemsForClient(this.client.id, this.meeting.id);
 
     this.listenForSegments();

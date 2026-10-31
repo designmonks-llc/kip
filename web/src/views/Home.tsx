@@ -1,15 +1,14 @@
-import { CircleCheckBig, FileText, ImageIcon, Mic, MoreHorizontal, NotebookPen, Star } from 'lucide-react';
+import { CircleCheckBig, FileText, FolderPlus, ImageIcon, Mic, NotebookPen } from 'lucide-react';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { loadOpenActions } from '../lib/actions';
 import { coverFor, customCovers } from '../lib/covers';
-import { blocksToText } from '../lib/blocks';
 import { isTrashed, listClients, listPages, openItemsForClient, saveSettings, type Page } from '../lib/db';
-import { fmtDateTime } from '../lib/recap';
 import { CoverPicker, EmptyState, Mosaic } from './brand';
 import { Switch, useSettings } from './ui';
 import { go, SHORTHAND, useData, useSession } from './common';
-import { PageActionsMenu, renamePage } from './PageActions';
-import { newPage, pageHref, pageTitle, quickNote } from './workspace';
+import { ItemCard } from './cards';
+import { PageActionsMenu } from './PageActions';
+import { newFolder, newPage, pageHref, quickNote, topFolder } from './workspace';
 
 function greeting(now: Date) {
   const h = now.getHours();
@@ -43,7 +42,14 @@ export function Home() {
   }, []);
 
   const byId = new Map((pages ?? []).map((p) => [p.id, p]));
-  const recent = (pages ?? []).filter((p) => !isTrashed(p, byId)).sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 12);
+  const live = (pages ?? []).filter((p) => !isTrashed(p, byId));
+  // Folders keep their pages out of sight: Home shows the top folders, then only pages that aren't in one.
+  const folders = live.filter((p) => p.kind === 'folder' && !topFolder(p, byId)).sort((a, b) => a.title.localeCompare(b.title));
+  const recent = live.filter((p) => p.kind !== 'folder' && !topFolder(p, byId)).sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 12);
+  const card = (p: Page) => (
+    <ItemCard key={p.id} p={p} pages={pages ?? []} menuOpen={menu?.page.id === p.id} renaming={renaming === p.id}
+      onRenamed={() => setRenaming(null)} onMenu={(rect) => setMenu(menu?.page.id === p.id ? null : { page: p, rect })} />
+  );
   const openCount = actions ? actions.notes.length + actions.meetings.length : 0;
   const openPreview = actions
     ? [
@@ -107,58 +113,25 @@ export function Home() {
 
       <div className="home-grid">
         <section>
-          <div className="sec-head"><p className="eyebrow-d">Recent</p><h2>Jump back in</h2></div>
+          {folders.length > 0 && (
+            <>
+              <div className="sec-head sec-head-row">
+                <div><p className="eyebrow-d">Folders</p><h2>Your projects</h2></div>
+                <button className="ghost" onClick={() => newFolder()}><FolderPlus size={15} /> New folder</button>
+              </div>
+              <div className="recent-grid folder-grid">{folders.map(card)}</div>
+            </>
+          )}
+          <div className={`sec-head sec-head-row ${folders.length ? 'after-folders' : ''}`}>
+            <div><p className="eyebrow-d">{folders.length ? 'Not in a folder' : 'Recent'}</p><h2>Jump back in</h2></div>
+            {folders.length === 0 && <button className="ghost" onClick={() => newFolder()} title="Group pages and meetings by project"><FolderPlus size={15} /> New folder</button>}
+          </div>
           {pages && recent.length === 0 ? (
             <div className="recent-empty">
-              <EmptyState title="A clear page" text="Nothing here yet. Start a page, a meeting or a quick note and it shows up here." />
+              <EmptyState title="A clear page" text={folders.length ? 'Everything is tidied into folders. New pages show up here until you file them.' : 'Nothing here yet. Start a page, a meeting or a quick note and it shows up here.'} />
             </div>
           ) : (
-            <div className="recent-grid">
-              {recent.map((p) => {
-                const snippet = p.kind === 'note'
-                  ? blocksToText(p.content ?? []).split('\n').filter(Boolean).slice(0, 2).join(' · ')
-                  : 'Meeting notes, recap and follow-up';
-                return (
-                  <article
-                    key={p.id}
-                    className={`note-card ${menu?.page.id === p.id ? 'menu-open' : ''}`}
-                    onClick={() => renaming !== p.id && go(pageHref(p))}
-                  >
-                    <div className="nc-head">
-                      <span className={`nc-icon ${p.kind}`}>{p.kind === 'meeting' ? <Mic size={14} /> : <FileText size={14} />}</span>
-                      {p.pinned && <Star size={13} className="pin-mark" />}
-                    </div>
-                    {renaming === p.id ? (
-                      <input
-                        className="rename"
-                        autoFocus
-                        defaultValue={p.title}
-                        onClick={(e) => e.stopPropagation()}
-                        onFocus={(e) => e.target.select()}
-                        onBlur={(e) => { renamePage(p, e.target.value.trim()); setRenaming(null); }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') e.currentTarget.blur();
-                          if (e.key === 'Escape') { e.currentTarget.value = p.title; e.currentTarget.blur(); }
-                        }}
-                      />
-                    ) : (
-                      <div className="nc-title">{pageTitle(p)}</div>
-                    )}
-                    <div className="nc-snippet">{snippet || 'Empty page'}</div>
-                    <div className="nc-meta">{p.kind === 'meeting' ? 'Meeting' : 'Page'} · {fmtDateTime(p.updatedAt)}</div>
-                    <button
-                      className="icon-btn card-menu-btn"
-                      title="More actions"
-                      aria-label="More actions"
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onClick={(e) => { e.stopPropagation(); setMenu(menu?.page.id === p.id ? null : { page: p, rect: e.currentTarget.getBoundingClientRect() }); }}
-                    >
-                      <MoreHorizontal size={16} />
-                    </button>
-                  </article>
-                );
-              })}
-            </div>
+            <div className="recent-grid">{recent.map(card)}</div>
           )}
         </section>
 

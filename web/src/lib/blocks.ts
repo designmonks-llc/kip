@@ -96,7 +96,9 @@ export function blocksToMarkdown(blocks: unknown[], depth = 0): string {
       case 'quote': out.push(`${pad}> ${text}`); break;
       case 'codeBlock': out.push('```' + (b.props?.language ?? ''), blockText(b), '```'); break;
       case 'divider': out.push('---'); break;
-      case 'image': out.push(`![${b.props?.caption ?? ''}](${b.props?.url ?? ''})`); break;
+      // files kept in Kip ("kipfile:") have no address outside it, so exports name them instead
+      case 'image': out.push(String(b.props?.url ?? '').startsWith('kipfile:') ? `${pad}🖼 ${b.props?.name || b.props?.caption || 'Image'}` : `![${b.props?.caption ?? ''}](${b.props?.url ?? ''})`); break;
+      case 'file': case 'video': case 'audio': out.push(`${pad}📎 ${b.props?.name || 'Attachment'}`); break;
       case 'table': out.push('(table)'); break;
       default: out.push(text ? pad + text : '');
     }

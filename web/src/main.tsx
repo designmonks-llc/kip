@@ -11,6 +11,10 @@ import { sessionStore } from './lib/session';
 import { transcriber } from './lib/transcriber';
 import { cleanupEmptyPages } from './views/workspace';
 import { loadCustomCovers } from './lib/covers';
+import { backupBeforeUpdate } from './lib/backup';
+import { desktop } from './lib/files';
+import { quickNote } from './views/workspace';
+import { toasts } from './lib/toast';
 import './styles.css';
 
 watchErrors();
@@ -33,6 +37,8 @@ dbEvents.onBlocked = waitingNote;
 const slow = setTimeout(waitingNote, 3000);
 const startupTask = (name: string, p: Promise<unknown>) => p.catch((e) => logError(`startup:${name}`, e));
 loadSettings()
+  // A new version keeps a copy of the notes before anything else runs (even the tidy-up of empty pages).
+  .then(() => startupTask('backup', backupBeforeUpdate()))
   .then(() => Promise.all([
     startupTask('meetings', interrupted.load()),
     startupTask('cleanup', cleanupEmptyPages()),
@@ -46,6 +52,17 @@ loadSettings()
       bootNote('Kip couldn’t open its storage', `Reload the page to try again. If it keeps happening, check that Chrome allows site data for localhost. <small>${String((e as Error)?.message ?? e)}</small>`);
     },
   );
+
+// The Kip icon in the Mac menu bar: a click opens a floating quick note (or brings back the one that's open).
+desktop()?.onMenuBar?.(async (action) => {
+  const { win } = floating.get();
+  if (action === 'hidden') return toasts.show('Menu bar icon hidden. Turn it back on in Settings.');
+  if (win && action === 'show') return win.focus();
+  if (action === 'show' || action === 'quick') {
+    const err = await quickNote();
+    if (err) toasts.show(err);
+  }
+});
 
 // Handles for testing the engines from the console without a real meeting.
 Object.assign(window, { __sticky: { transcriber, ScreenReader, floating, AudioTap } });

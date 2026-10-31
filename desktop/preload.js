@@ -12,4 +12,20 @@ Object.defineProperty(window, 'documentPictureInPicture', {
     },
   },
 });
-window.kipDesktop = { platform: process.platform };
+// What a browser tab can't do, handed to Kip's page (see web/src/lib/files.ts, KipDesktop).
+const { ipcRenderer } = require('electron');
+window.kipDesktop = {
+  platform: process.platform,
+  // open a page's file with its own app (a PDF opens in Preview)
+  openFile: (name, bytes) => ipcRenderer.invoke('kip:open-file', name, bytes),
+  // a page as PDF, saved where the person chooses (returns false if they cancel)
+  printToPdf: (html, name) => ipcRenderer.invoke('kip:print-pdf', html, name),
+  // the Mac share sheet (AirDrop, Mail, Messages…) with the page as a PDF; `html` is the page as UTF-8
+  share: (name, html) => ipcRenderer.invoke('kip:share', name, html),
+  // a backup file in ~/Library/Application Support/Kip/Backups (the newest five are kept)
+  writeBackup: (name, bytes) => ipcRenderer.invoke('kip:write-backup', name, bytes),
+  // the Kip icon in the menu bar: on/off, and what it asks for ('quick', 'show', 'hidden')
+  setMenuBarIcon: (on) => ipcRenderer.invoke('kip:set-tray', on),
+  getMenuBarIcon: () => ipcRenderer.invoke('kip:get-tray'),
+  onMenuBar: (fn) => ipcRenderer.on('kip:tray', (_e, action) => fn(action)),
+};

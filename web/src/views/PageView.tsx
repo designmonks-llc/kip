@@ -1,4 +1,6 @@
-import { createExtension, filterSuggestionItems, type PartialBlock } from '@blocknote/core';
+import { BlockNoteSchema, combineByGroup, type BlockNoteEditor, createExtension, filterSuggestionItems, type Block, type PartialBlock } from '@blocknote/core';
+import { en } from '@blocknote/core/locales';
+import { getMultiColumnSlashMenuItems, locales as columnLocales, multiColumnDropCursor, withMultiColumn } from '@blocknote/xl-multi-column';
 import { SuggestionMenu } from '@blocknote/core/extensions';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
@@ -7,6 +9,10 @@ import { FilePlus, PictureInPicture2, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { blockOps, blockText, colorFor, isShorthandColor, mergeBlocks, sameDoc, walk, type B } from '../lib/blocks';
 import { getPage, isTrashed, listPages, updatePage, type Page } from '../lib/db';
+import { FILE_SCHEME, openStoredFile, resolveFileUrl, storeFile } from '../lib/files';
+import { toasts } from '../lib/toast';
+import { KipFormattingToolbar, KipSideMenu, withoutIds } from './editorUi';
+import { ShareMenu } from './ShareMenu';
 import { floating } from '../lib/floating';
 import { go, useData, useSyncValue } from './common';
 import { Crumbs, PageMenu } from './PageMenu';
@@ -25,7 +31,19 @@ const shorthand = createExtension({
   ],
 });
 
-type EditorApi = ReturnType<typeof useCreateBlockNote>;
+// Pages can hold columns (drag a block beside another, or /2 columns).
+const schema = withMultiColumn(BlockNoteSchema.create());
+type EditorApi = BlockNoteEditor<typeof schema.blockSchema, typeof schema.inlineContentSchema, typeof schema.styleSchema>;
+
+/** Files dropped or picked into a page are kept on this device (see lib/files.ts). */
+async function uploadFile(file: File) {
+  try {
+    return await storeFile(file);
+  } catch (e) {
+    toasts.show((e as Error).message);
+    throw e;
+  }
+}
 
 export function PageView({ id }: { id: string }) {
   const page = useData(() => getPage(id), [id]);
@@ -60,6 +78,7 @@ export function PageView({ id }: { id: string }) {
           ) : (
             <button onClick={float} title="Float this note on top of other windows"><PictureInPicture2 size={15} /> Pop out</button>
           )}
+          <ShareMenu editor={() => editorRef.current} title={page.title} />
           <PageMenu page={page} />
         </div>
       </div>
@@ -137,13 +156,21 @@ function TitleInput({ page, editorRef }: { page: Page; editorRef: React.MutableR
  */
 function Editor({ page, editorRef }: { page: Page; editorRef: React.MutableRefObject<EditorApi | null> }) {
   const editor = useCreateBlockNote({
-    initialContent: page.content?.length ? (page.content as PartialBlock[]) : undefined,
+    schema,
+    dropCursor: multiColumnDropCursor,
+    dictionary: { ...en, multi_column: columnLocales.en } as typeof en,
+    uploadFile,
+    resolveFileUrl,
+    initialContent: page.content?.length ? (page.content as PartialBlock<typeof schema.blockSchema>[]) : undefined,
     disableExtensions: ['quote-block-shortcuts', 'bullet-list-item-shortcuts'],
     placeholders: { default: 'Write something, or press / for headings, lists and more', emptyDocument: 'Start writing, or press / for blocks' },
     extensions: [shorthand],
   });
   editorRef.current = editor;
   const look = useSettings();
+  const allPages = useData(listPages, []) ?? [];
+  const byId = new Map(allPages.map((p) => [p.id, p]));
+  const targets = allPages.filter((p) => p.kind === 'note' && p.id !== page.id && !isTrashed(p, byId)).sort((a, b) => b.updatedAt - a.updatedAt);
 
   // The stored content this editor last agreed with: the common ancestor for merging.
   const base = useRef<unknown[]>(page.content ?? []);
@@ -218,6 +245,13 @@ function Editor({ page, editorRef }: { page: Page; editorRef: React.MutableRefOb
     return () => clearTimeout(t);
   }, [editor]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /** Moves a block to the end of another page: copied there first, then removed here, so it can't be lost. */
+  const moveTo = useCallback(async (block: Block<any, any, any>, to: Page) => {
+    await updatePage(to.id, (p) => ({ content: [...(p.content ?? []), withoutIds(structuredClone(block))] }));
+    editor.removeBlocks([block.id]);
+    toasts.show(`Moved to “${to.title.trim() || 'Untitled'}”`);
+  }, [editor]);
+
   const onChange = useCallback(() => {
     // Colour lines that start with a shorthand symbol; clear the colour when the symbol goes.
     const fixes: [B, string][] = [];
@@ -236,8 +270,18 @@ function Editor({ page, editorRef }: { page: Page; editorRef: React.MutableRefOb
   }, [editor, save]);
 
   return (
-    <div className="editor-wrap">
-      <BlockNoteView editor={editor} theme={look.theme === 'dark' ? 'dark' : 'light'} onChange={onChange} slashMenu={false}>
+    <div
+      className="editor-wrap"
+      // Double-clicking a file opens it full size (a PDF opens in Preview on a Mac).
+      onDoubleClick={(e) => {
+        const el = (e.target as HTMLElement).closest('[data-file-block]')?.closest('[data-id]') as HTMLElement | null;
+        const url = el?.dataset.id ? (editor.getBlock(el.dataset.id)?.props as { url?: string } | undefined)?.url : undefined;
+        if (url?.startsWith(FILE_SCHEME)) { e.preventDefault(); openStoredFile(url); }
+      }}
+    >
+      <BlockNoteView editor={editor} theme={look.theme === 'dark' ? 'dark' : 'light'} onChange={onChange} slashMenu={false} formattingToolbar={false} sideMenu={false}>
+        <KipFormattingToolbar />
+        <KipSideMenu pages={targets} onMove={moveTo} />
         <SuggestionMenuController
           triggerCharacter="/"
           getItems={async (query) =>
@@ -252,7 +296,7 @@ function Editor({ page, editorRef }: { page: Page; editorRef: React.MutableRefOb
                   icon: <FilePlus size={18} />,
                   onItemClick: async () => { await save(); await newPage(page.id); },
                 },
-                ...getDefaultReactSlashMenuItems(editor),
+                ...combineByGroup(getDefaultReactSlashMenuItems(editor), getMultiColumnSlashMenuItems(editor)),
               ],
               query,
             )
