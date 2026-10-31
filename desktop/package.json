@@ -2,7 +2,7 @@
   "name": "kip",
   "productName": "Kip",
   "version": "0.1.1",
-  "description": "Kip \u2014 calm notes and private meeting notes, on your Mac.",
+  "description": "Kip — calm notes and private meeting notes, on your Mac.",
   "main": "main.js",
   "private": true,
   "scripts": {
@@ -41,21 +41,23 @@
     },
     "dmg": {
       "title": "Install Kip",
+      "background": "build/background.tiff",
+      "iconSize": 96,
       "contents": [
         {
-          "x": 150,
-          "y": 190
+          "x": 190,
+          "y": 150
         },
         {
-          "x": 390,
-          "y": 190,
+          "x": 470,
+          "y": 150,
           "type": "link",
           "path": "/Applications"
         }
       ],
       "window": {
-        "width": 540,
-        "height": 380
+        "width": 660,
+        "height": 460
       }
     }
   },

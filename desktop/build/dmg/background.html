@@ -1,0 +1,36 @@
+<!doctype html>
+<!-- Source for the installer window's background (build/background.tiff). Render with scripts in build/dmg/render.py. -->
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 660px; height: 460px; overflow: hidden; }
+  body { position: relative; background: linear-gradient(180deg, #ffffff 0%, #f4f8fc 100%); font-family: 'Host Grotesk', sans-serif; color: #22314a; -webkit-font-smoothing: antialiased; }
+  .title { position: absolute; left: 0; right: 0; top: 30px; text-align: center; font-weight: 300; font-size: 26px; letter-spacing: -0.02em; }
+  .title b { font-weight: 500; color: #2a63d4; }
+  /* Finder puts the Kip icon at (190, 150) and Applications at (470, 150) */
+  .arrow { position: absolute; left: 262px; top: 148px; width: 136px; height: 4px; background: repeating-linear-gradient(90deg, #9fc6ee 0 8px, transparent 8px 14px); border-radius: 2px; }
+  .arrow::after { content: ''; position: absolute; right: -6px; top: -7px; border: 9px solid transparent; border-left: 11px solid #9fc6ee; border-right: 0; }
+  .panel { position: absolute; left: 28px; right: 28px; bottom: 26px; height: 170px; padding: 18px 22px; border-radius: 18px; background: #eaf2fb; }
+  .panel h2 { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #6b7a91; }
+  .panel h2::before { content: ''; width: 7px; height: 7px; border-radius: 1.5px; background: #2a63d4; }
+  .steps { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+  .step { display: grid; grid-template-columns: 26px 1fr; gap: 12px; }
+  .n { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 7px; background: #12307a; color: #fff; font-size: 13px; font-weight: 600; }
+  .step b { display: block; font-size: 15px; font-weight: 600; }
+  .step p { margin-top: 4px; font-size: 13px; line-height: 1.45; color: #44546d; }
+  .step i { font-style: normal; font-weight: 600; color: #12307a; }
+  .foot { margin-top: 12px; font-size: 12px; color: #6b7a91; }
+</style></head>
+<body>
+  <div class="title">Drag <b>Kip</b> into Applications</div>
+  <div class="arrow"></div>
+  <div class="panel">
+    <h2>The first time you open Kip</h2>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><div><b>Open Kip, click Done</b><p>Your Mac says it can’t verify Kip. Click <i>Done</i>, not Move to Bin.</p></div></div>
+      <div class="step"><span class="n">2</span><div><b>Click Open Anyway</b><p><i>System Settings → Privacy &amp; Security</i>, scroll down, click <i>Open Anyway</i>.</p></div></div>
+    </div>
+    <p class="foot">Kip isn’t signed by Apple yet, so this is needed once per version.</p>
+  </div>
+</body></html>

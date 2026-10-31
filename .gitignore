@@ -19,3 +19,6 @@ landing/wireframe.html
 
 # design previews (self-contained HTML)
 previews/
+
+# installer background renders (build/background.tiff is the one that ships)
+desktop/build/dmg/*.png
