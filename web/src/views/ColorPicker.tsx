@@ -18,6 +18,14 @@ export function ColorPicker({ value, onPick, title = 'Colour', size = 14, icon }
   const [open, setOpen] = useState<{ top: number; left: number } | null>(null);
   const box = useRef<HTMLSpanElement>(null);
   const pop = useRef<HTMLSpanElement>(null);
+  const btn = useRef<HTMLButtonElement>(null);
+  const place = () => {
+    const b = btn.current;
+    if (!b) return null;
+    const r = b.getBoundingClientRect();
+    const w = b.ownerDocument.defaultView?.innerWidth ?? innerWidth;
+    return { top: r.bottom + 6, left: Math.max(8, Math.min(r.left - 8, w - 236)) };
+  };
   useEffect(() => {
     if (!open) return;
     const close = (e: MouseEvent) => { const t = e.target as Node; if (!box.current?.contains(t) && !pop.current?.contains(t)) setOpen(null); };
@@ -25,19 +33,15 @@ export function ColorPicker({ value, onPick, title = 'Colour', size = 14, icon }
     const win = box.current?.ownerDocument.defaultView ?? window;
     win.addEventListener('mousedown', close);
     win.addEventListener('keydown', key);
-    const gone = () => setOpen(null);
+    // the page moving under it (scrolling, or the editor settling after a save) moves the swatches along
+    const gone = () => setOpen(place());
     win.addEventListener('scroll', gone, true);
     return () => { win.removeEventListener('mousedown', close); win.removeEventListener('keydown', key); win.removeEventListener('scroll', gone, true); };
   }, [open]);
   const current = value || 'default';
   return (
     <span ref={box} className="color-picker" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
-      <button className={`icon-btn color-btn ${open ? 'on' : ''}`} title={title} aria-label={title} aria-expanded={!!open} onClick={(e) => {
-          if (open) return setOpen(null);
-          const r = e.currentTarget.getBoundingClientRect();
-          const w = e.currentTarget.ownerDocument.defaultView?.innerWidth ?? innerWidth;
-          setOpen({ top: r.bottom + 6, left: Math.max(8, Math.min(r.left - 8, w - 236)) });
-        }}>
+      <button ref={btn} className={`icon-btn color-btn ${open ? 'on' : ''}`} title={title} aria-label={title} aria-expanded={!!open} onClick={() => setOpen(open ? null : place())}>
         {icon ?? <Palette size={size} />}
       </button>
       {open && box.current && createPortal(
