@@ -1,4 +1,4 @@
-import { BlockNoteSchema, combineByGroup, type BlockNoteEditor, createExtension, filterSuggestionItems, type Block, type PartialBlock } from '@blocknote/core';
+import { BlockNoteSchema, combineByGroup, defaultInlineContentSpecs, type BlockNoteEditor, createExtension, filterSuggestionItems, type Block, type PartialBlock } from '@blocknote/core';
 import { en } from '@blocknote/core/locales';
 import { getMultiColumnSlashMenuItems, locales as columnLocales, multiColumnDropCursor, withMultiColumn } from '@blocknote/xl-multi-column';
 import { SuggestionMenu } from '@blocknote/core/extensions';
@@ -15,6 +15,7 @@ import { KipFormattingToolbar, KipSideMenu, withoutIds } from './editorUi';
 import { ShareMenu } from './ShareMenu';
 import { BoardPage, emptyBoard, KanbanBlock, readBoard } from './Kanban';
 import { TEMPLATE_ICON } from './Templates';
+import { Mention, mentionItems } from './Mention';
 import { TEMPLATES } from '../lib/templates';
 import { floating } from '../lib/floating';
 import { go, useData, useSyncValue } from './common';
@@ -35,7 +36,7 @@ const shorthand = createExtension({
 });
 
 // Pages can hold columns (drag a block beside another, or /2 columns) and Kanban boards.
-const schema = withMultiColumn(BlockNoteSchema.create()).extend({ blockSpecs: { kanban: KanbanBlock() } });
+const schema = withMultiColumn(BlockNoteSchema.create({ inlineContentSpecs: { ...defaultInlineContentSpecs, mention: Mention } })).extend({ blockSpecs: { kanban: KanbanBlock() } });
 type EditorApi = BlockNoteEditor<typeof schema.blockSchema, typeof schema.inlineContentSchema, typeof schema.styleSchema>;
 
 /** Files dropped or picked into a page are kept on this device (see lib/files.ts). */
@@ -275,8 +276,26 @@ function Editor({ page, editorRef }: { page: Page; editorRef: React.MutableRefOb
     timer.current = window.setTimeout(save, 400);
   }, [editor, save]);
 
+  // Boards and tables may grow into the empty space to the right of the text, up to the window's edge.
+  const wrap = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = wrap.current;
+    const main = el?.closest('.main') as HTMLElement | null;
+    if (!el || !main) return;
+    const measure = () => {
+      const text = el.querySelector('.bn-editor > .bn-block-group')?.getBoundingClientRect();
+      const m = main.getBoundingClientRect();
+      if (text) el.style.setProperty('--bleed', `${Math.max(0, Math.min(560, m.left + main.clientWidth - 28 - text.right))}px`);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(main);
+    return () => ro.disconnect();
+  }, []);
+
   return (
     <div
+      ref={wrap}
       className="editor-wrap"
       // Double-clicking a file opens it full size (a PDF opens in Preview on a Mac).
       onDoubleClick={(e) => {
@@ -289,6 +308,7 @@ function Editor({ page, editorRef }: { page: Page; editorRef: React.MutableRefOb
       <BlockNoteView editor={editor} theme={look.theme === 'dark' ? 'dark' : 'light'} onChange={onChange} slashMenu={false} formattingToolbar={false} sideMenu={false}>
         <KipFormattingToolbar />
         <KipSideMenu pages={targets} onMove={moveTo} />
+        <SuggestionMenuController triggerCharacter="@" getItems={(query) => mentionItems(editor, page.id, query)} />
         <SuggestionMenuController
           triggerCharacter="/"
           getItems={async (query) =>

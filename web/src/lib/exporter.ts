@@ -109,7 +109,9 @@ async function picture(html: string, kind: 'png' | 'jpg') {
 /** Word: BlockNote's own exporter, with Kip's files and colours. */
 async function word(editor: Editor, title: string) {
   // boards go into Word as their columns and cards
-  const mappings = { ...docxDefaultSchemaMappings, blockMapping: { ...docxDefaultSchemaMappings.blockMapping,
+  const mappings = { ...docxDefaultSchemaMappings,
+    inlineContentMapping: { ...docxDefaultSchemaMappings.inlineContentMapping, mention: (ic: { props: { title: string } }) => new TextRun({ text: `@${ic.props.title}`, color: '2A63D4', bold: true }) },
+    blockMapping: { ...docxDefaultSchemaMappings.blockMapping,
     kanban: (block: { props: { data: string } }) => boardLines(block.props.data).map((t, i, all) => new Paragraph({ children: [new TextRun({ text: t, bold: !t.startsWith('•') })], spacing: { after: i === all.length - 1 ? 200 : 40 } })) } };
   const exporter = new DOCXExporter(editor.schema as never, mappings as never, {
     colors: KIP_COLORS,

@@ -21,6 +21,10 @@ export const readBoard = (data: string): Board => {
 /** The page the board lives in, so new cards become its sub-pages. */
 export const BoardPage = createContext<string | undefined>(undefined);
 
+// a column just added: its name box takes focus and the board scrolls to it (kept outside React, as the board
+// re-renders from the block whenever it changes)
+let freshColumn: string | null = null;
+
 function BoardView({ data, editable, save }: { data: string; editable: boolean; save: (b: Board) => void }) {
   const pageId = useContext(BoardPage);
   const board = readBoard(data);
@@ -30,6 +34,18 @@ function BoardView({ data, editable, save }: { data: string; editable: boolean; 
   const [drag, setDrag] = useState<{ card: string; from: string } | null>(null);
   const [over, setOver] = useState<{ col: string; index: number } | null>(null);
   const draft = useRef<HTMLInputElement>(null);
+  // more columns than fit: the board scrolls sideways, and a soft edge shows there's more to the right
+  const scroller = useRef<HTMLDivElement>(null);
+  const [more, setMore] = useState(false);
+  const check = () => { const el = scroller.current; if (el) setMore(el.scrollLeft + el.clientWidth < el.scrollWidth - 4); };
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el) return;
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    check();
+    return () => ro.disconnect();
+  }, [board.columns.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // card titles follow their pages (so exports and the board agree after a rename)
   useEffect(() => {
@@ -63,13 +79,17 @@ function BoardView({ data, editable, save }: { data: string; editable: boolean; 
   }
 
   return (
-    <div className={`kanban ${DRAG_EXCLUSION_CLASSNAME}`} contentEditable={false} onKeyDown={(e) => e.stopPropagation()}>
+    // clicks inside the board stay in the board (the editor would otherwise select the whole block)
+    <div className="kb-wrap" contentEditable={false} onMouseDown={(e) => e.stopPropagation()}>
+    {more && <span className="kb-fade" aria-hidden />}
+    <div ref={scroller} className={`kanban ${DRAG_EXCLUSION_CLASSNAME}`} onScroll={check} onKeyDown={(e) => e.stopPropagation()}>
       {board.columns.map((col) => (
         <section key={col.id} className={`kb-col ${over?.col === col.id ? 'kb-over' : ''}`}
           onDragOver={(e) => { if (!drag) return; e.preventDefault(); if (over?.col !== col.id) setOver({ col: col.id, index: col.cards.length }); }}
           onDrop={(e) => { e.preventDefault(); drop(col.id, over?.col === col.id ? over.index : col.cards.length); }}>
           <header className="kb-head">
-            <input className="kb-title" defaultValue={col.title} readOnly={!editable} aria-label="Column name"
+            <input className="kb-title" defaultValue={col.title}
+              ref={(el) => { if (el && col.id === freshColumn) { freshColumn = null; el.closest('.kb-col')?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' }); el.focus({ preventScroll: true }); el.select(); } }} readOnly={!editable} aria-label="Column name"
               onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== col.title) update((b) => { b.columns.find((c) => c.id === col.id)!.title = v; }); }}
               onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }} />
             <span className="kb-count">{col.cards.length}</span>
@@ -122,10 +142,11 @@ function BoardView({ data, editable, save }: { data: string; editable: boolean; 
         </section>
       ))}
       {editable && (
-        <button className="kb-add-col" onClick={() => update((b) => { b.columns.push({ id: uid(), title: 'New column', cards: [] }); })} title="Add a column">
+        <button className="kb-add-col" onClick={() => update((b) => { const id = uid(); freshColumn = id; b.columns.push({ id, title: 'New column', cards: [] }); })} title="Add a column">
           <Plus size={15} />
         </button>
       )}
+    </div>
     </div>
   );
 }

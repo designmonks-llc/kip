@@ -20,7 +20,7 @@ export const isShorthandColor = (c?: string) => !!c && OUR_COLORS.has(c);
 
 function inlineText(content: any): string {
   if (!Array.isArray(content)) return '';
-  return content.map((c) => (c.type === 'text' ? c.text : c.type === 'link' ? inlineText(c.content) : '')).join('');
+  return content.map((c) => (c.type === 'text' ? c.text : c.type === 'link' ? inlineText(c.content) : c.type === 'mention' ? `@${c.props?.title ?? ''}` : '')).join('');
 }
 export const blockText = (b: B) => inlineText(b.content);
 
@@ -71,6 +71,7 @@ function inlineMd(content: any): string {
   return content
     .map((c) => {
       if (c.type === 'link') return `[${inlineMd(c.content)}](${c.href})`;
+      if (c.type === 'mention') return `@${c.props?.title ?? ''}`;
       if (c.type !== 'text') return '';
       let t = c.text as string;
       const st = c.styles ?? {};
