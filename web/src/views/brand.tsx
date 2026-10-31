@@ -21,8 +21,10 @@ export const Grain = () => <span className="grain" aria-hidden />;
  * A photo breaking into pixels. The base photo is drawn "cover"; tiles either show a displaced
  * square of the same photo or a flat colour square.
  */
-export function Mosaic({ art, cell = 44, seed = 11, clusters = 14, area, className = '', tiles: showTiles = true, children }: {
+export function Mosaic({ art, cell = 44, seed = 11, clusters = 14, area, fy = 0.5, className = '', tiles: showTiles = true, children }: {
   art: Art | null; cell?: number; seed?: number; clusters?: number; tiles?: boolean;
+  /** which part of the photo stays in view when the box is wider than the photo: 0 = top, 1 = bottom */
+  fy?: number;
   area?: { x0: number; x1: number; y0: number; y1: number };
   className?: string; children?: React.ReactNode;
 }) {
@@ -40,7 +42,7 @@ export function Mosaic({ art, cell = 44, seed = 11, clusters = 14, area, classNa
   const aw = art?.w ?? 1, ah = art?.h ?? 1;
   const scale = Math.max(box.w / aw, box.h / ah) || 0;
   const bw = aw * scale, bh = ah * scale;
-  const ox = (box.w - bw) / 2, oy = (box.h - bh) / 2;
+  const ox = (box.w - bw) / 2, oy = (box.h - bh) * fy;
   const cols = Math.ceil(box.w / cell), rows = Math.ceil(box.h / cell);
   const tiles = useMemo(
     () => (showTiles && cols && rows ? mosaicTiles(cols, rows, seed, clusters, area) : []).filter((t) => art || t.kind !== 'shift'),
@@ -62,11 +64,34 @@ export function Mosaic({ art, cell = 44, seed = 11, clusters = 14, area, classNa
   );
 }
 
-/** Empty states get a small piece of art so they feel intentional, not broken. */
-export function EmptyState({ art, title, text, children, seed = 5 }: { art: Art; title: string; text?: string; children?: React.ReactNode; seed?: number }) {
+/**
+ * Small pixel drawings for empty states, in Kip's own soft blues so they stay quiet.
+ * o = outline, - = soft fill, b = blue accent (the blue pixels blink slowly, like a cursor).
+ */
+const PIXELS = {
+  note: ['ooooooo..', 'o.....oo.', 'o.---..oo', 'o.......o', 'o.----..o', 'o.......o', 'o.--b...o', 'o.......o', 'ooooooooo'],
+  check: ['..ooooo..', '.o.....o.', 'o.......o', 'o.....b.o', 'o.b..b..o', 'o..bb...o', 'o.......o', '.o.....o.', '..ooooo..'],
+  trash: ['...ooo...', '.ooooooo.', '.........', '..ooooo..', '..o-o-o..', '..o-o-o..', '..o-o-o..', '..o-o-o..', '..ooooo..'],
+  search: ['..ooo....', '.o---o...', 'o-----o..', 'o-----o..', 'o-----o..', '.o---o...', '..ooobb..', '.......b.', '........b'],
+} as const;
+export type PixelName = keyof typeof PIXELS;
+
+export function PixelArt({ name, size = 72 }: { name: PixelName; size?: number }) {
+  const rows = PIXELS[name];
+  return (
+    <svg className="pixel-art" width={size} height={size} viewBox={`0 0 ${rows[0].length} ${rows.length}`} shapeRendering="crispEdges" aria-hidden>
+      {rows.flatMap((row, y) => [...row].map((c, x) => c !== '.' && (
+        <rect key={`${x}-${y}`} x={x + 0.06} y={y + 0.06} width={0.88} height={0.88} className={c === 'o' ? 'px-o' : c === '-' ? 'px-f' : 'px-b'} />
+      )))}
+    </svg>
+  );
+}
+
+/** Empty states get a small pixel drawing so they feel intentional, not broken. */
+export function EmptyState({ icon = 'note', title, text, children }: { icon?: PixelName; title: string; text?: string; children?: React.ReactNode }) {
   return (
     <div className="empty-state">
-      <Mosaic art={art} cell={22} seed={seed} clusters={6} className="empty-art" area={{ x0: 0.1, x1: 0.95, y0: 0.05, y1: 0.6 }} />
+      <div className="empty-art"><PixelArt name={icon} /></div>
       <h3 className="empty-title">{title}</h3>
       {text && <p className="empty-text">{text}</p>}
       {children && <div className="row center">{children}</div>}

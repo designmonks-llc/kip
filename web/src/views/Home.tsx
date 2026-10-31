@@ -1,7 +1,6 @@
 import { CircleCheckBig, FileText, ImageIcon, Mic, MoreHorizontal, NotebookPen, Star } from 'lucide-react';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { loadOpenActions } from '../lib/actions';
-import { ART } from '../lib/art';
 import { coverFor, customCovers } from '../lib/covers';
 import { blocksToText } from '../lib/blocks';
 import { isTrashed, listClients, listPages, openItemsForClient, saveSettings, type Page } from '../lib/db';
@@ -81,12 +80,11 @@ export function Home() {
             </div>
           )}
         </div>
-        <Mosaic key={cover.id} art={cover.art} tiles={st.mosaic} className="hero" cell={44} seed={23} clusters={11} area={{ x0: 0.6, x1: 1, y0: 0.05, y1: 0.7 }}>
+        <Mosaic key={cover.id} art={cover.art} tiles={st.mosaic} className="hero" cell={32} seed={23} clusters={8} fy={0.2} area={{ x0: 0.62, x1: 1, y0: 0.05, y1: 0.8 }}>
           <div className="hero-veil" />
           <div className="hero-content">
             <p className="eyebrow">{today} · <time className="clock" dateTime={now.toISOString()}>{time}</time></p>
             <h1 className="display">{greeting(now)}{name ? `, ${name}` : ''}.</h1>
-            <p className="hero-sub">Keep what matters, from every meeting and every passing thought.</p>
           </div>
         </Mosaic>
       </div>
@@ -111,9 +109,9 @@ export function Home() {
         <section>
           <div className="sec-head"><p className="eyebrow-d">Recent</p><h2>Jump back in</h2></div>
           {pages && recent.length === 0 ? (
-            <EmptyState art={ART.hill} title="A clear field" text="Nothing here yet. Start a page, a meeting or a quick note and it shows up here.">
-              <button className="primary" onClick={() => newPage()}><FileText size={15} /> New page</button>
-            </EmptyState>
+            <div className="recent-empty">
+              <EmptyState title="A clear page" text="Nothing here yet. Start a page, a meeting or a quick note and it shows up here." />
+            </div>
           ) : (
             <div className="recent-grid">
               {recent.map((p) => {

@@ -1,7 +1,6 @@
 // Open actions, Trash and Search: whole-workspace lists.
 import { RotateCcw, Trash2 } from 'lucide-react';
 import { loadOpenActions, tickTodo } from '../lib/actions';
-import { ART } from '../lib/art';
 import { deleteForever, listMeetings, listPages, restorePage, search } from '../lib/db';
 import { fmtDate, fmtTime } from '../lib/recap';
 import { EmptyState } from './brand';
@@ -39,7 +38,7 @@ export function ActionsView() {
         title="Open actions"
         lead={total ? `${total} to-do${total === 1 ? '' : 's'} from your notes and meetings. Tick them here or where they live.` : 'Every unticked to-do from your notes and meetings shows up here.'}
       />
-      {total === 0 && <EmptyState art={ART.hill} title="All clear" text="Every to-do is ticked. New ones appear here when you type “! ” in a note or a meeting." seed={9} />}
+      {total === 0 && <EmptyState icon="check" title="All clear" text="Every to-do is ticked. New ones appear here when you type “! ” in a note or a meeting." />}
 
       {byPage.size > 0 && <h3>From notes</h3>}
       {[...byPage.values()].map((items) => (
@@ -87,7 +86,7 @@ export function TrashView() {
           }}><Trash2 size={14} /> Empty trash</button>
         )}
       />
-      {trashed.length === 0 && <EmptyState art={ART.hill} title="Trash is empty" text="Pages you delete wait here so you can bring them back." seed={14} />}
+      {trashed.length === 0 && <EmptyState icon="trash" title="Trash is empty" text="Pages you delete wait here so you can bring them back." />}
       {trashed.length > 0 && (
         <ul className="row-list">
           {trashed.map((p) => (
@@ -119,7 +118,7 @@ export function SearchView({ q }: { q: string }) {
   return (
     <main className="page narrow">
       <PageHeader eyebrow="Search" title={`“${q}”`} lead={hits ? `${hits.length} result${hits.length === 1 ? '' : 's'} across pages, meetings, transcripts and screens.` : 'Searching…'} />
-      {hits?.length === 0 && <EmptyState art={ART.sky} title="Nothing found" text="Try another word. Search covers page titles and text, meeting notes, transcripts and screens." seed={3} />}
+      {hits?.length === 0 && <EmptyState icon="search" title="Nothing found" text="Try another word. Search covers page titles and text, meeting notes, transcripts and screens." />}
       {hits && hits.length > 0 && (
         <ul className="row-list">
           {hits.map((h, i) => (

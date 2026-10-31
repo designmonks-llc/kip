@@ -1,7 +1,6 @@
 import { db, isTrashed, listPages, meetingsForClient, openItemsForClient } from '../lib/db';
 import { fmtDate, fmtDateTime, fmtTime } from '../lib/recap';
 import { go, LineRow, toggleLine, useData, useSession } from './common';
-import { ART } from '../lib/art';
 import { EmptyState } from './brand';
 import { PageHeader } from './ui';
 
@@ -33,7 +32,7 @@ export function ClientView({ id }: { id: string }) {
       <div className="cols">
         <section>
           <h3>Open items ({open.length})</h3>
-          {open.length === 0 && <EmptyState art={ART.hill} title="Nothing open" text="Every action is done and every question answered." seed={21} />}
+          {open.length === 0 && <EmptyState icon="check" title="Nothing open" text="Every action is done and every question answered." />}
           <ul className="lines">
             {open.map(({ line, meeting }) => (
               <LineRow key={line.id} line={line} showTime={false} checkable onToggle={toggleLine}

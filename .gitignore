@@ -16,3 +16,6 @@ QA-REPORT.md
 landing/v1.html
 landing/wireframe.html
 .vercel
+
+# design previews (self-contained HTML)
+previews/
