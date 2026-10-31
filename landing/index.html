@@ -94,7 +94,7 @@
   .nav.away { --y: -160%; }
   .nav .logo { font-size: 22px; margin-right: 22px; }
   .nav-links { position: relative; display: flex; }
-  .nav-links a { position: relative; z-index: 1; padding: 9px 14px; border-radius: 999px; font-size: 14px; color: var(--ink-2); transition: color .3s; }
+  .nav-links a { position: relative; z-index: 1; padding: 9px 14px; border-radius: 999px; font-size: 14px; color: var(--ink-2); white-space: nowrap; transition: color .3s; }
   .nav-links a:hover, .nav-links a.on { color: var(--ink); }
   .nav-ind { position: absolute; top: 0; bottom: 0; left: 0; width: 0; border-radius: 999px; background: rgba(18, 48, 122, .07); opacity: 0; transition: transform .6s var(--ease), width .6s var(--ease), opacity .4s; }
   .nav-prog { position: absolute; left: 24px; right: 24px; bottom: 2px; height: 2px; border-radius: 2px; background: var(--blue); transform-origin: left; transform: scaleX(0); opacity: .55; }
@@ -334,6 +334,43 @@
   .ans p { padding: 0 40px 24px 0; color: var(--ink-2); opacity: 0; transform: translateY(-6px); transition: opacity .5s, transform .6s var(--ease); }
   .qa.open .ans { grid-template-rows: 1fr; }
   .qa.open .ans p { opacity: 1; transform: none; transition-delay: .1s; }
+  .ans a { color: var(--blue); font-weight: 500; }
+
+  /* release notes */
+  .upd-side { align-self: start; position: sticky; top: 110px; }
+  .upd-side .lead { margin-top: 24px; max-width: 420px; }
+  .upd-all { display: inline-flex; align-items: center; gap: 8px; margin-top: 28px; font-size: 15px; font-weight: 600; color: var(--blue); }
+  .upd-all svg { width: 15px; height: 15px; transition: transform .5s var(--ease); }
+  .upd-all:hover svg { transform: translate(2px, -2px); }
+  .rels { display: grid; gap: 16px; }
+  .rel { padding: 28px 30px 26px; border-radius: 24px; background: #fff; box-shadow: inset 0 0 0 1px var(--line); transition: box-shadow .5s var(--ease); }
+  .rel:hover { box-shadow: inset 0 0 0 1px var(--line-strong), var(--shadow-m); }
+  .rel-head { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; }
+  .rel-v { font: 300 34px/1 var(--font-display); letter-spacing: -.03em; color: var(--ink); }
+  .rel-latest { height: 24px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; background: var(--sky-50); box-shadow: inset 0 0 0 1px var(--sky-200); font-size: 12.5px; font-weight: 600; color: var(--deep); }
+  .rel-latest::before { content: ''; width: 6px; height: 6px; border-radius: 1.5px; background: var(--blue); animation: blink 1.6s steps(2) infinite; }
+  .rel-date { font-size: 14px; color: var(--muted); }
+  .rel-dl { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 999px; background: #fff; box-shadow: inset 0 0 0 1px var(--line-strong); font-size: 13.5px; font-weight: 600; color: var(--ink); transition: box-shadow .3s, color .3s; }
+  .rel-dl:hover { color: var(--blue); box-shadow: inset 0 0 0 1px var(--sky-300), 0 8px 20px rgba(15, 40, 80, .07); }
+  .rel-dl svg { width: 15px; height: 15px; transition: transform .5s var(--ease); }
+  .rel-dl:hover svg { transform: translateY(2px); }
+  .rel-sum { margin-top: 14px; font-size: 17px; color: var(--ink-2); }
+  .rel-g { margin-top: 20px; }
+  .rel-g h3 { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .rel-g h3::before { content: ''; width: 7px; height: 7px; border-radius: 1.5px; background: var(--faint); }
+  .rel-g.new h3::before { background: var(--blue); }
+  .rel-g.improved h3::before { background: var(--deep); }
+  .rel-g.fixed h3::before { background: var(--c-money); }
+  .rel-g ul { margin-top: 10px; display: grid; gap: 8px; list-style: none; padding: 0; }
+  .rel-g li { position: relative; padding-left: 18px; color: var(--ink-2); line-height: 1.55; }
+  .rel-g li::before { content: ''; position: absolute; left: 2px; top: .7em; width: 5px; height: 5px; border-radius: 1px; background: var(--sky-300); }
+  .rel-g li b { color: var(--ink); font-weight: 600; }
+  .rel-g code { font: 500 .9em var(--font-mono); padding: 1px 6px; border-radius: 6px; background: var(--sky-50); color: var(--deep); }
+  .rel.old { padding-block: 22px 20px; }
+  .rel.old .rel-v { font-size: 26px; }
+  .rels-more { justify-self: start; }
+  @media (max-width: 980px) { .upd-side { position: static; } }
+  @media (max-width: 600px) { .rel { padding: 22px 20px; } .rel-dl { margin-left: 0; } }
 
   /* closing scene */
   .scene { height: 100svh; min-height: 720px; max-height: 1040px; overflow: hidden; padding: 0; background: #b9cad9; color: var(--deep); }
@@ -402,7 +439,7 @@
   <a href="#top" class="logo" aria-label="Kip home">k<span class="logo-i">ı<i></i></span>p</a>
   <nav class="nav-links" aria-label="Main">
     <span class="nav-ind" id="navInd"></span>
-    <a href="#how">How it works</a><a href="#features">Features</a><a href="#privacy">Privacy</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
+    <a href="#how">How it works</a><a href="#features">Features</a><a href="#privacy">Privacy</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a><a href="#updates">Updates</a>
   </nav>
   <a class="btn btn-dark" href="#" data-download><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.7-1-2.7-4.1zM13.9 5c.7-.9 1.2-2 1-3.2-1 0-2.3.7-3 1.6-.7.8-1.2 2-1.1 3.1 1.2.1 2.3-.6 3.1-1.5z"/></svg><span>Download<span class="hide-s"> for Mac</span></span></a>
   <span class="nav-prog" id="navProg"></span>
@@ -615,8 +652,21 @@
         <div class="qa"><button aria-expanded="false">What’s the difference between the Mac app and the browser?<span class="pm"></span></button><div class="ans"><div><p>The browser version is the quickest way to try Kip and works well for calls in another browser tab. The Mac app can also listen to desktop apps like Zoom and Teams, and floats over everything.</p></div></div></div>
         <div class="qa"><button aria-expanded="false">How good is the Bangla?<span class="pm"></span></button><div class="ans"><div><p>Kip notices when someone speaks Bangla and switches on its own. It gets the gist well; English words mixed into Bangla sentences can come out rough. It improves with each update.</p></div></div></div>
         <div class="qa"><button aria-expanded="false">Where are my notes stored?<span class="pm"></span></button><div class="ans"><div><p>Only on your Mac. You can copy or download any page as Markdown, and Time Machine backs Kip up along with everything else.</p></div></div></div>
-        <div class="qa"><button aria-expanded="false">How do updates work?<span class="pm"></span></button><div class="ans"><div><p>Kip checks for new versions on its own and installs them quietly. You’ll see a small “restart to update” note. Your notes stay exactly where they are.</p></div></div></div>
+        <div class="qa"><button aria-expanded="false">How do updates work?<span class="pm"></span></button><div class="ans"><div><p>When a new version is out, download it here and drag Kip into Applications, choosing Replace. Your notes stay exactly where they are. <a href="#updates">Release notes</a> list what changed in each version.</p></div></div></div>
       </div>
+    </div>
+  </section>
+
+  <!-- RELEASE NOTES -->
+  <section class="updates" id="updates">
+    <div class="wrap faq-grid">
+      <div class="upd-side">
+        <p class="kicker rv">Release notes</p>
+        <h2 class="display h2 rv" style="--d: 1">Every <b>update</b>.</h2>
+        <p class="lead rv" style="--d: 2">What’s new, better and fixed in each version of Kip for Mac. Older versions stay here too, in case you need one.</p>
+        <a class="upd-all rv" style="--d: 3" href="https://github.com/designmonks-llc/kip/releases" target="_blank" rel="noopener">All releases on GitHub<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
+      </div>
+      <div class="rels rv" style="--d: 1" id="rels" aria-live="polite"></div>
     </div>
   </section>
 
@@ -641,7 +691,7 @@
       <div class="mark"><canvas id="markArt" aria-label="kip"></canvas></div>
       <div class="foot">
         <span>© 2026 Kip · Made for calm meetings</span>
-        <nav aria-label="Footer"><a href="#privacy">Privacy</a><a href="#faq">FAQ</a><a href="mailto:hello@example.com">Contact</a></nav>
+        <nav aria-label="Footer"><a href="#privacy">Privacy</a><a href="#faq">FAQ</a><a href="#updates">Release notes</a><a href="mailto:hello@example.com">Contact</a></nav>
         <span>Photos from Unsplash</span>
       </div>
     </div>
@@ -1266,6 +1316,66 @@ document.fonts.ready.then(placePill); addEventListener('resize', placePill);
 // ---- receipt details ----
 $('#rDate').textContent = new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 $('#barcode').innerHTML = Array.from({ length: 34 }, (_, i) => `<i style="width:${[1, 2, 3, 1, 2][Math.floor(Math.abs(Math.sin(i * 12.9898)) * 5)]}px"></i>`).join('');
+
+// ---- release notes ----
+// Read live from GitHub Releases, so a new release appears here without touching this page.
+// Each release's notes use "### New", "### Improved" and "### Fixed" (see RELEASING.md); "### Install…" is left out.
+// RELEASES_FALLBACK is used if GitHub can't be reached (offline, or its hourly limit is used up).
+const RELEASES_API = 'https://api.github.com/repos/designmonks-llc/kip/releases?per_page=30';
+const RELEASES_FALLBACK = [{"body": "A calmer Home.\n\n### Improved\n- **Slimmer header.** The sky cover is now a thin band, so **New page**, **New meeting** and **Quick note** are the first thing you see.\n- **Quieter empty screens.** Photos in empty states (Home, Open actions, Trash, Search, Clients) are replaced by small pixel drawings in Kip's soft blues.\n\n### Install or update\n1. Download **Kip-arm64.dmg** below (Macs with Apple silicon: M1 and newer).\n2. Quit Kip if it's open, then open the .dmg and drag **Kip** into **Applications** (choose **Replace**). Your notes stay where they are.\n3. The first time, macOS blocks it because the app isn't notarized yet. Open it once, then go to **System Settings → Privacy & Security → Open Anyway**.\n", "date": "2026-10-31T13:20:30Z", "dmg": "https://github.com/designmonks-llc/kip/releases/download/v0.1.1/Kip-arm64.dmg", "name": "Kip 0.1.1 for Mac", "tag": "v0.1.1"}, {"body": "The first version of **Kip for Mac**: calm, private notes for every meeting.\n\n### New\n- **A floating sticky** that stays on top of Zoom, Meet, Teams and every other app, even full screen.\n- **Shorthand that sorts itself:** `!` action, `>` decision, `?` question, `$` money, `\"` quote.\n- **Private listening** in English and বাংলা, transcribed on your Mac. Audio is never stored or uploaded.\n- **Hears desktop call apps** through your Mac's audio (macOS 14.2 or later).\n- **Reads shared slides**, remembers each client, and drafts the follow-up.\n\n### Install\n1. Download **Kip-arm64.dmg** below (Macs with Apple silicon: M1 and newer).\n2. Open it and drag **Kip** into **Applications**.\n3. The first time, macOS blocks it because the app isn't notarized yet. Open it once, then go to **System Settings → Privacy & Security → Open Anyway**.\n4. The first meeting asks for **Microphone** and **Screen & System Audio Recording** access. After allowing screen recording, reopen Kip.\n", "date": "2026-10-30T08:35:04Z", "dmg": "https://github.com/designmonks-llc/kip/releases/download/v0.1.0/Kip-arm64.dmg", "name": "Kip 0.1.0 for Mac", "tag": "v0.1.0"}];
+const SHOW_RELEASES = 3;   // newest ones in full; older ones fold behind a button
+const esc = (t) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const inline = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/`(.+?)`/g, '<code>$1</code>');
+function parseNotes(body) {
+  const out = { summary: [], groups: [] };
+  let g = null;
+  for (const raw of (body || '').replace(/\r/g, '').split('\n')) {
+    const line = raw.trim();
+    const h = line.match(/^#{2,4}\s+(.+)/);
+    if (h) {
+      const title = h[1].trim();
+      g = /^install/i.test(title) ? null : { title, kind: /fix/i.test(title) ? 'fixed' : /improv|better/i.test(title) ? 'improved' : /new|added|in it/i.test(title) ? 'new' : '', items: [] };
+      if (g) out.groups.push(g);
+      else g = 'skip';
+      continue;
+    }
+    if (g === 'skip' || !line) continue;
+    const li = line.match(/^(?:[-*]|\d+\.)\s+(.+)/);
+    if (g && li) g.items.push(li[1]);
+    else if (!g) out.summary.push(line);
+  }
+  out.groups = out.groups.filter((x) => x.items.length);
+  return out;
+}
+const fmtDate = (d) => new Date(d).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+const dlIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></svg>';
+function releaseCard(r, i) {
+  const v = r.tag.replace(/^v/, ''), n = parseNotes(r.body);
+  return `<article class="rel ${i >= SHOW_RELEASES ? 'old' : ''}">
+    <div class="rel-head"><span class="rel-v">${esc(v)}</span>${i === 0 ? '<span class="rel-latest">Latest</span>' : ''}<time class="rel-date" datetime="${esc(r.date)}">${fmtDate(r.date)}</time>
+      ${r.dmg ? `<a class="rel-dl" href="${esc(r.dmg)}">${dlIcon}${i === 0 ? 'Download' : `Download ${esc(v)}`}</a>` : ''}</div>
+    ${n.summary.length ? `<p class="rel-sum">${inline(n.summary.join(' '))}</p>` : ''}
+    ${n.groups.map((g) => `<div class="rel-g ${g.kind}"><h3>${esc(g.title)}</h3><ul>${g.items.map((t) => `<li>${inline(t)}</li>`).join('')}</ul></div>`).join('')}
+  </article>`;
+}
+function showReleases(list) {
+  const host = $('#rels'), rels = list.filter((r) => !r.draft && !r.prerelease);
+  const html = rels.map(releaseCard);
+  host.innerHTML = html.slice(0, SHOW_RELEASES).join('') + (rels.length > SHOW_RELEASES
+    ? `<button class="btn btn-line rels-more" id="relsMore">Show ${rels.length - SHOW_RELEASES} older version${rels.length - SHOW_RELEASES > 1 ? 's' : ''}</button>` : '');
+  $('#relsMore')?.addEventListener('click', (e) => { e.currentTarget.outerHTML = html.slice(SHOW_RELEASES).join(''); });
+}
+(async () => {
+  showReleases(RELEASES_FALLBACK);
+  try {
+    const cached = sessionStorage.getItem('kip-releases');
+    const data = cached ? JSON.parse(cached) : await fetch(RELEASES_API, { headers: { Accept: 'application/vnd.github+json' } }).then((r) => { if (!r.ok) throw r; return r.json(); });
+    if (!cached) try { sessionStorage.setItem('kip-releases', JSON.stringify(data)); } catch {}
+    const list = data.map((r) => ({ tag: r.tag_name, name: r.name, date: r.published_at, body: r.body, draft: r.draft, prerelease: r.prerelease,
+      dmg: (r.assets || []).find((a) => a.name.endsWith('.dmg'))?.browser_download_url }));
+    if (list.length) showReleases(list);
+  } catch { /* keep the built-in list */ }
+})();
 
 // ---- faq ----
 $$('.qa button').forEach((b) => b.addEventListener('click', () => {
