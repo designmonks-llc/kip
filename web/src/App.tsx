@@ -3,6 +3,7 @@ import { interrupted } from './lib/interrupted';
 import { resumeSession } from './lib/session';
 import { fmtDateTime } from './lib/recap';
 import { ErrorBoundary, ToastHost } from './views/Safety';
+import { UpdateBanner } from './views/Updates';
 import { ClientView } from './views/ClientView';
 import { go, useRoute, useSession } from './views/common';
 import { FloatingHost } from './views/FloatingHost';
@@ -72,6 +73,7 @@ export function App() {
     <div className="shell">
       <Sidebar />
       <div className="main">
+        <UpdateBanner />
         {s?.meeting && parts[0] !== 'live' && (
           <div className="live-banner" onClick={() => go('/live')}>● Meeting in progress: {s.meeting.title}. Click to return.</div>
         )}

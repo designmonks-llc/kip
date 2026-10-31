@@ -28,4 +28,10 @@ window.kipDesktop = {
   setMenuBarIcon: (on) => ipcRenderer.invoke('kip:set-tray', on),
   getMenuBarIcon: () => ipcRenderer.invoke('kip:get-tray'),
   onMenuBar: (fn) => ipcRenderer.on('kip:tray', (_e, action) => fn(action)),
+  // updates from inside Kip: state, check, download, then quit-swap-reopen
+  updateState: () => ipcRenderer.invoke('kip:update-state'),
+  checkForUpdate: () => ipcRenderer.invoke('kip:update-check'),
+  downloadUpdate: () => ipcRenderer.invoke('kip:update-download'),
+  installUpdate: () => ipcRenderer.invoke('kip:update-install'),
+  onUpdate: (fn) => ipcRenderer.on('kip:update', (_e, state) => fn(state)),
 };

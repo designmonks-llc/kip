@@ -5,6 +5,7 @@
 //  - hearing the meeting app's sound (Zoom, Teams…) through macOS system audio.
 const { app, BrowserWindow, dialog, Menu, nativeImage, protocol, session, desktopCapturer, ipcMain, shell, ShareMenu, systemPreferences, Tray } = require('electron');
 const os = require('node:os');
+const { createUpdater } = require('./updater');
 const path = require('node:path');
 const fs = require('node:fs/promises');
 
@@ -44,6 +45,13 @@ async function serve(request) {
 let main = null;
 let quitting = false;
 
+// ---- updates from inside Kip (see updater.js) ----
+const updater = createUpdater((state) => main?.webContents.send('kip:update', state));
+ipcMain.handle('kip:update-state', () => updater.get());
+ipcMain.handle('kip:update-check', () => updater.check(true));
+ipcMain.handle('kip:update-download', () => updater.download());
+ipcMain.handle('kip:update-install', () => updater.install());
+
 // Small preferences the shell needs before the page loads (the menu-bar icon).
 const PREFS = () => path.join(app.getPath('userData'), 'shell-prefs.json');
 async function readPrefs() { try { return JSON.parse(await fs.readFile(PREFS(), 'utf8')); } catch { return {}; } }
@@ -68,6 +76,7 @@ function setTray(on) {
     { label: 'Show floating note', click: () => tell('show') },
     { type: 'separator' },
     { label: 'Open Kip', click: () => { if (!main) createMain(); main.show(); main.focus(); } },
+    { label: 'Check for updates…', click: () => { if (!main) createMain(); main.show(); updater.check(true); } },
     { label: 'Hide this icon', click: () => { writePrefs({ tray: false }); setTray(false); main?.webContents.send('kip:tray', 'hidden'); } },
     { type: 'separator' },
     { label: 'Quit Kip', role: 'quit' },
@@ -217,6 +226,7 @@ app.whenReady().then(async () => {
 
   createMain();
   setTray((await readPrefs()).tray !== false);
+  updater.start();
   app.on('activate', () => { if (!main) createMain(); else main.show(); });
 });
 

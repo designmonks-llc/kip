@@ -1,7 +1,7 @@
 {
   "name": "kip",
   "productName": "Kip",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Kip — calm notes and private meeting notes, on your Mac.",
   "main": "main.js",
   "private": true,
@@ -15,6 +15,7 @@
     "productName": "Kip",
     "files": [
       "main.js",
+      "updater.js",
       "preload.js",
       "picker.html",
       "picker-preload.js",
@@ -29,7 +30,8 @@
       "category": "public.app-category.productivity",
       "icon": "build/icon.png",
       "target": [
-        "dmg"
+        "dmg",
+        "zip"
       ],
       "identity": "-",
       "extendInfo": {

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { backupName, listAutoBackups, makeBackup, restoreAutoBackup, restoreBackup, type RestoreSummary } from '../lib/backup';
 import { clearErrors, readErrors } from '../lib/errlog';
 import { desktop, saveBlob } from '../lib/files';
+import { checkForUpdate, useUpdate } from './Updates';
 import { toasts } from '../lib/toast';
 import { deleteEverything, saveSettings, type Language, type ListeningMode, type Settings } from '../lib/db';
 import { summarizerAvailability } from '../lib/summarize';
@@ -184,10 +185,14 @@ function MacCard() {
   const on = useData(async () => (await desktop()?.getMenuBarIcon?.()) ?? true, []);
   const [value, setValue] = useState<boolean | undefined>(undefined);
   const shown = value ?? on ?? true;
+  const update = useUpdate();
   return (
     <SetCard title="Mac">
       <SetRow label="Kip in the menu bar" desc="A Kip icon at the top of your screen. Click it for a floating quick note from any app; right-click for more.">
         <Switch label="Kip in the menu bar" checked={shown} onChange={async (v) => { setValue(v); await desktop()?.setMenuBarIcon?.(v); }} />
+      </SetRow>
+      <SetRow label={`Version ${__APP_VERSION__}`} desc={update.status === 'checking' ? 'Checking…' : update.status === 'available' || update.status === 'ready' ? `Kip ${update.version} is ready. Use the banner at the top to update.` : 'Kip checks for updates by itself and installs them when you say so. Your notes stay as they are.'}>
+        <button disabled={update.status === 'checking' || update.status === 'downloading'} onClick={() => checkForUpdate()}>Check for updates</button>
       </SetRow>
     </SetCard>
   );

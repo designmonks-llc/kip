@@ -34,8 +34,9 @@ Write for people, not for the code: say what changed for the person using Kip.
 1. Bump the version in `web/package.json`, `desktop/package.json` (and their lockfiles) and `RELEASE.version` in `landing/index.html`.
 2. Commit and push to `main`.
 3. Deploy the browser app: `npx vercel@latest deploy --prod` in `web/`.
-4. Build the Mac app: `npm run dist` in `desktop/` → `desktop/release/Kip-arm64.dmg`.
-5. Publish: `gh release create vX.Y.Z desktop/release/Kip-arm64.dmg --latest --title "Kip X.Y.Z for Mac" --notes-file notes.md`.
+4. Build the Mac app: `npm run dist` in `desktop/` → `desktop/release/Kip-arm64.dmg` and `Kip-arm64.zip`.
+5. Publish **both** files: `gh release create vX.Y.Z desktop/release/Kip-arm64.dmg desktop/release/Kip-arm64.zip --latest --title "Kip X.Y.Z for Mac" --notes-file notes.md`.
+   The .zip is what Kip downloads when it updates itself (desktop/updater.js); without it, people only see the update on the website.
 6. Deploy the landing page (`npx vercel@latest deploy --prod` in `landing/`) so the version label matches.
 
 The "Download for Mac" buttons always point at the latest release. Older versions stay downloadable from the

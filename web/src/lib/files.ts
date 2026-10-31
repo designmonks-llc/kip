@@ -81,5 +81,15 @@ export interface KipDesktop {
   setMenuBarIcon?: (on: boolean) => Promise<void>;
   getMenuBarIcon?: () => Promise<boolean>;
   onMenuBar?: (fn: (action: 'quick' | 'show' | 'hidden') => void) => void;
+  updateState?: () => Promise<UpdateState>;
+  checkForUpdate?: () => Promise<UpdateState>;
+  downloadUpdate?: () => Promise<void>;
+  installUpdate?: () => Promise<{ ok: boolean; error?: string }>;
+  onUpdate?: (fn: (s: UpdateState) => void) => void;
+}
+/** The Mac app's update state (desktop/updater.js). */
+export interface UpdateState {
+  status: 'idle' | 'checking' | 'available' | 'downloading' | 'ready' | 'error' | 'current';
+  version?: string; notes?: string; progress?: number; error?: string; manual?: boolean;
 }
 export const desktop = () => (window as unknown as { kipDesktop?: KipDesktop }).kipDesktop;

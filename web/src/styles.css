@@ -772,3 +772,17 @@ html[data-theme='dark'] [data-style-type="backgroundColor"][data-value="black"],
 .folder-view .sec-head { height: auto; margin-bottom: 10px; }
 .recent-empty.small-empty { height: 220px; }
 html[data-theme='dark'] .note-card .nc-icon.folder { background: #3a2f17; color: #f0b860; }
+
+/* --- Updates (Mac app) --- */
+.update-banner { display: flex; align-items: center; gap: 10px; margin: 10px 16px 0; padding: 8px 10px 8px 14px; border-radius: 14px; background: var(--sky-50); border: 1px solid var(--line); color: var(--ink); font-size: 13.5px; }
+.update-banner > svg { color: var(--blue); flex: none; }
+.update-banner .update-actions { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.update-banner button { height: 30px; font-size: 13px; }
+.modal-backdrop { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: center; background: rgba(11, 31, 85, 0.22); backdrop-filter: blur(4px); animation: pop 0.14s var(--ease); }
+.modal { width: min(520px, calc(100vw - 32px)); max-height: 80vh; overflow: auto; padding: 26px 28px 22px; border-radius: 20px; background: var(--paper); border: 1px solid var(--line); box-shadow: var(--shadow-l); }
+.modal h2 { font-family: var(--font-display); font-weight: 300; font-size: 30px; letter-spacing: -0.03em; margin: 4px 0 10px; color: var(--ink); }
+.update-notes h4 { margin: 16px 0 6px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.update-notes li { margin: 0 0 8px 18px; color: var(--ink-2); line-height: 1.5; font-size: 14px; }
+.update-notes p { color: var(--ink-2); font-size: 14px; margin: 0 0 8px; }
+.update-notes b { color: var(--ink); }
+.update-notes code { font-size: 12.5px; padding: 1px 5px; border-radius: 5px; background: var(--sky-50); }
