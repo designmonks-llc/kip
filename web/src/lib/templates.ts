@@ -32,7 +32,7 @@ export const TEMPLATES: Template[] = [
   {
     id: 'kanban', name: 'Kanban board', about: 'Move work from To do to Done. Every card opens as its own page.',
     outline: ['To do · Doing · Done', 'Cards you drag between columns', 'Each card is a page for notes and files'],
-    title: () => 'Project board',
+    title: () => 'Kanban board',
     blocks: () => [p('Drag cards between columns. Click a card to open it and write inside it.'), { type: 'kanban', props: { data: '' } }, p()],
     cards: [{ column: 0, title: 'Write the brief' }, { column: 0, title: 'Collect references' }, { column: 1, title: 'First design round' }, { column: 2, title: 'Kick-off call' }],
   },

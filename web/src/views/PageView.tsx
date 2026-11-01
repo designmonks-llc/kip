@@ -171,7 +171,8 @@ function Editor({ page, editorRef }: { page: Page; editorRef: React.MutableRefOb
     resolveFileUrl,
     initialContent: page.content?.length ? (page.content as PartialBlock<typeof schema.blockSchema>[]) : undefined,
     disableExtensions: ['quote-block-shortcuts', 'bullet-list-item-shortcuts'],
-    placeholders: { default: 'Write something, or press / for headings, lists and more', emptyDocument: 'Start writing, or press / for blocks' },
+    // empty list items stay clean (templates have many) instead of each saying "List"
+    placeholders: { default: 'Write something, or press / for headings, lists and more', emptyDocument: 'Start writing, or press / for blocks', bulletListItem: '', numberedListItem: '', checkListItem: '', toggleListItem: '' },
     extensions: [shorthand],
   });
   editorRef.current = editor;
@@ -278,24 +279,42 @@ function Editor({ page, editorRef }: { page: Page; editorRef: React.MutableRefOb
     timer.current = window.setTimeout(save, 400);
   }, [editor, save]);
 
-  // Boards and tables may grow into the empty space on both sides of the text, evenly, keeping a margin
-  // to the window's edges (and never wider than 1180px).
+  // A board or table wider than the text grows evenly into the space on both sides, only as much as it needs
+  // (so it stays centred on the page), keeping a margin to the window's edges and never past 1180px in all.
+  // (the sizes go in a small stylesheet next to the editor: changing the editor's own elements would make it redraw)
   const wrap = useRef<HTMLDivElement>(null);
+  const sizes = useRef<HTMLStyleElement>(null);
   useEffect(() => {
     const el = wrap.current;
     const main = el?.closest('.main') as HTMLElement | null;
-    if (!el || !main) return;
+    const root = el?.querySelector('.bn-editor > .bn-block-group');
+    if (!el || !main || !root) return;
+    let frame = 0;
     const measure = () => {
-      const text = el.querySelector('.bn-editor > .bn-block-group')?.getBoundingClientRect();
-      const m = main.getBoundingClientRect();
-      if (!text) return;
-      const room = Math.min(text.left - m.left, m.left + main.clientWidth - text.right) - 64;
-      el.style.setProperty('--bleed', `${Math.max(0, Math.min(room, (1180 - text.width) / 2))}px`);
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const text = root.getBoundingClientRect();
+        const m = main.getBoundingClientRect();
+        const room = Math.max(0, Math.min(text.left - m.left, m.left + main.clientWidth - text.right) - 64, 0);
+        const most = Math.min(room, Math.max(0, (1180 - text.width) / 2));
+        let css = '';
+        for (const outer of root.querySelectorAll<HTMLElement>(':scope > .bn-block-outer')) {
+          const table = outer.querySelector<HTMLTableElement>(':scope > .bn-block > .bn-block-content[data-content-type="table"] table');
+          const cols = outer.querySelectorAll(':scope > .bn-block > .node-kanban .kb-col').length;
+          // what it needs: a table's columns at their set widths (plus its handles), or ~230px per board column
+          const needs = table ? parseFloat(table.style.minWidth) || 0 : cols ? cols * 242 + 56 : 0;
+          const grow = Math.round(Math.max(0, Math.min(most, (needs - text.width) / 2)));
+          if (grow > 0 && outer.dataset.id) css += `.bn-block-outer[data-id="${CSS.escape(outer.dataset.id)}"]{--grow:${grow}px}`;
+        }
+        if (sizes.current && sizes.current.textContent !== css) sizes.current.textContent = css;
+      });
     };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(main);
-    return () => ro.disconnect();
+    const mo = new MutationObserver(measure); // columns added or removed
+    mo.observe(root, { childList: true, subtree: true });
+    return () => { ro.disconnect(); mo.disconnect(); cancelAnimationFrame(frame); };
   }, []);
 
   return (
@@ -309,6 +328,7 @@ function Editor({ page, editorRef }: { page: Page; editorRef: React.MutableRefOb
         if (url?.startsWith(FILE_SCHEME)) { e.preventDefault(); openStoredFile(url); }
       }}
     >
+      <style ref={sizes} />
       <BoardPage.Provider value={page.id}>
       <BlockNoteView editor={editor} theme={theme === 'dark' ? 'dark' : 'light'} onChange={onChange} slashMenu={false} formattingToolbar={false} sideMenu={false}>
         <KipFormattingToolbar />

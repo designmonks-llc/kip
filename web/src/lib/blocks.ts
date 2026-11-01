@@ -103,10 +103,13 @@ export function blocksToMarkdown(blocks: unknown[], depth = 0): string {
       case 'kanban': {
         let cols: { title: string; cards: { title: string }[] }[] = [];
         try { cols = JSON.parse(b.props?.data || '{}').columns ?? []; } catch { /* empty board */ }
-        for (const c of cols) out.push(`**${c.title}**`, ...c.cards.map((k) => `- ${k.title}`), '');
+        for (const c of cols) out.push('', `**${c.title}**`, '', ...c.cards.map((k) => `- ${k.title}`));
+        out.push('');
         break;
       }
       case 'table': out.push('(table)'); break;
+      // side-by-side columns become one after the other, at the same level (not indented, which reads as code)
+      case 'columnList': for (const col of b.children ?? []) out.push('', blocksToMarkdown(col.children ?? [], depth)); out.push(''); continue;
       default: out.push(text ? pad + text : '');
     }
     if (b.children?.length) out.push(blocksToMarkdown(b.children, depth + 1));

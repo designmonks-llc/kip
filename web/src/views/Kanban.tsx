@@ -91,7 +91,7 @@ function BoardView({ data, editable, save }: { data: string; editable: boolean; 
           <header className="kb-head">
             <input className="kb-title" defaultValue={col.title}
               ref={(el) => { if (el && col.id === freshColumn) { freshColumn = null; el.closest('.kb-col')?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' }); el.focus({ preventScroll: true }); el.select(); } }} readOnly={!editable} aria-label="Column name"
-              onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== col.title) update((b) => { b.columns.find((c) => c.id === col.id)!.title = v; }); }}
+              onBlur={(e) => { const v = e.target.value.trim(); if (!v) e.target.value = col.title; else if (v !== col.title) update((b) => { b.columns.find((c) => c.id === col.id)!.title = v; }); }}
               onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }} />
             <span className="kb-count">{col.cards.length}</span>
             {editable && <ColorPicker value={col.color} title="Column colour" size={13}
@@ -163,7 +163,13 @@ export const KanbanBlock = createReactBlockSpec(
   {
     render: ({ block, editor }) => (
       <BoardView data={block.props.data} editable={editor.isEditable}
-        save={(b) => editor.updateBlock(block, { props: { data: JSON.stringify(b) } } as never)} />
+        save={(b) => {
+          // saving the board shouldn't scroll the page (the editor would bring its cursor into view)
+          const main = document.querySelector('.main');
+          const top = main?.scrollTop;
+          editor.updateBlock(block, { props: { data: JSON.stringify(b) } } as never);
+          if (main && top !== undefined) requestAnimationFrame(() => { main.scrollTop = top; });
+        }} />
     ),
     // exports (HTML, PDF, pictures): a simple read-only board
     toExternalHTML: ({ block }) => (

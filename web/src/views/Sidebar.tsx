@@ -71,12 +71,12 @@ export function Sidebar() {
     return () => removeEventListener('keydown', key);
   }, []);
   function pick(e: React.MouseEvent, p: Page) {
-    if (e.shiftKey && anchor.current && order.includes(anchor.current)) {
+    if (e.shiftKey && anchor.current && order.includes(anchor.current) && order.includes(p.id)) {
       const a = order.indexOf(anchor.current), b = order.indexOf(p.id);
       setSel(new Set(order.slice(Math.min(a, b), Math.max(a, b) + 1)));
       return;
     }
-    if (e.metaKey || e.ctrlKey) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey) {
       setSel((cur) => { const n = new Set(cur); if (n.has(p.id)) n.delete(p.id); else n.add(p.id); return n; });
       anchor.current = p.id;
       return;
@@ -191,7 +191,7 @@ export function Sidebar() {
     return (
       <div key={key}>
         <div
-          className={`tree-row ${currentId === p.id ? 'active' : ''} ${!opts.pinnedRow && sel.has(p.id) ? 'selected' : ''} ${menuOpen ? 'menu-open' : ''} ${drag?.id === p.id ? 'dragging' : ''} ${opts.pinnedRow ? '' : dropClass(p.id)}`}
+          className={`tree-row ${currentId === p.id ? 'active' : ''} ${sel.has(p.id) ? 'selected' : ''} ${menuOpen ? 'menu-open' : ''} ${drag?.id === p.id ? 'dragging' : ''} ${opts.pinnedRow ? '' : dropClass(p.id)}`}
           style={{ paddingLeft: 4 + depth * 14 }}
           {...(opts.pinnedRow || renaming === key ? {} : dragProps(p))}
         >
@@ -211,7 +211,7 @@ export function Sidebar() {
               }}
             />
           ) : (
-            <span className="tree-title" onClick={(e) => (opts.pinnedRow ? go(pageHref(p)) : pick(e, p))} onDoubleClick={() => setRenaming(key)} title={`${pageTitle(p)}\n⌘-click or Shift-click to select several`}>
+            <span className="tree-title" onClick={(e) => pick(e, p)} onDoubleClick={() => setRenaming(key)} title={`${pageTitle(p)}\n⌘-click or Shift-click to select several`}>
               <span className="kind">{opts.pinnedRow ? <Star size={ICON} /> : <PageIcon p={p} open={isOpen && children.length > 0} />}</span>
               <span className="tree-label">{pageTitle(p)}</span>
             </span>
@@ -313,7 +313,7 @@ export function Sidebar() {
               <div className="menu-scroll">
                 {selTargets.map(({ p, depth }) => (
                   <button key={p.id} className="menu-item" style={{ paddingLeft: 10 + depth * 14 }} onClick={() => moveSelected(p)}>
-                    {p.kind === 'folder' ? <Folder size={14} className={p.color ? `ink-${p.color}` : undefined} /> : <span className="menu-dot" />}<span>{pageTitle(p)}</span>
+                    <PageIcon p={p} /><span>{pageTitle(p)}</span>
                   </button>
                 ))}
               </div>

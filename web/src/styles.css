@@ -811,7 +811,7 @@ html[data-theme='dark'] .note-card .nc-icon.folder { background: #3a2f17; color:
 .sel-bar .sel-count { flex: 1 0 100%; font-size: 12px; font-weight: 600; color: var(--ink); padding: 0 2px 2px; }
 .sel-bar button { height: 28px; padding: 0 10px; font-size: 12.5px; }
 .sel-bar .icon-btn { width: 28px; padding: 0; margin-left: auto; font-size: 16px; }
-.sel-move { position: absolute; left: 0; bottom: calc(100% + 6px); width: 100%; }
+.sel-move { position: absolute; left: 0; bottom: calc(100% + 6px); width: 100%; background: var(--paper) !important; backdrop-filter: none; }
 
 /* --- Templates gallery: a list on the left, the real page it makes on the right --- */
 .tpl-modal { position: relative; display: grid; grid-template-columns: 268px minmax(0, 1fr); width: min(980px, calc(100vw - 32px)); height: min(640px, calc(100vh - 48px)); border-radius: 22px; overflow: hidden; background: var(--paper); border: 1px solid var(--line); box-shadow: var(--shadow-l); animation: pop 0.16s var(--ease); }
@@ -874,8 +874,11 @@ html[data-theme='dark'] .ts-green { background: rgba(47, 174, 107, 0.16); } html
 /* --- Wide blocks: boards and tables at the top level can use the space to the right of the text --- */
 /* the whole block moves out (not just its content), so the + and drag handles stay beside it */
 .editor-wrap .bn-editor > .bn-block-group > .bn-block-outer:has(> .bn-block > :is(.bn-block-content[data-content-type='table'], .node-kanban)) {
-  margin-left: calc(-1 * var(--bleed, 0px)); margin-right: calc(-1 * var(--bleed, 0px));
+  margin-left: calc(-1 * var(--grow, 0px)); margin-right: calc(-1 * var(--grow, 0px));
 }
+/* a board narrower than its space sits in the middle (auto margins collapse to 0 once it scrolls) */
+.kanban > :first-child { margin-left: auto; }
+.kanban > :last-child { margin-right: auto; }
 .editor-wrap .tableWrapper::-webkit-scrollbar, .kanban::-webkit-scrollbar { height: 8px; }
 .editor-wrap .tableWrapper::-webkit-scrollbar-track, .kanban::-webkit-scrollbar-track { background: var(--sky-50); border-radius: 4px; }
 .editor-wrap .tableWrapper::-webkit-scrollbar-thumb, .kanban::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
@@ -892,8 +895,6 @@ html[data-theme='dark'] .ts-green { background: rgba(47, 174, 107, 0.16); } html
 .node-kanban.ProseMirror-selectednode .kanban { outline: 2px solid var(--sky-200); outline-offset: 3px; border-radius: 14px; }
 .kb-wrap { position: relative; width: 100%; }
 .kb-fade { position: absolute; z-index: 1; top: 0; right: 0; bottom: 10px; width: 56px; pointer-events: none; background: linear-gradient(to right, transparent, var(--paper) 85%); }
-/* tables wider than the page: a soft shadow at the right edge while there's more to scroll to */
-.editor-wrap .tableWrapper { background: linear-gradient(to left, var(--paper) 40%, transparent) right center / 40px 100% no-repeat local, radial-gradient(farthest-side at 100% 50%, rgba(15, 40, 80, 0.14), transparent) right center / 14px 100% no-repeat scroll; }
 
 /* --- Colour shades: very light tints (and dark-mode versions) for boards, cards, folders and the editor --- */
 :root {
@@ -1003,3 +1004,17 @@ html[data-theme='dark'] .folder-swatch { background: #3a2f17; color: #f0b860; }
 .sel-bar { position: sticky; padding-right: 34px; }
 .sel-bar .sel-clear { position: absolute; top: 6px; right: 6px; margin: 0; }
 .folder-swatch svg, .tile-default svg { color: inherit !important; }
+/* tables fill the text width (centred, lined up with the text) and grow evenly past it only when they need to;
+   equal room on both sides keeps the table's handles inside without pushing it off-centre */
+.editor-wrap .bn-editor [data-content-type='table'] .tableWrapper { padding-left: var(--bn-table-widget-size); }
+.editor-wrap .bn-editor [data-content-type='table'] .tableWrapper-inner { width: 100%; }
+.editor-wrap .bn-editor [data-content-type='table'] table { width: 100% !important; }
+/* the handles sit in the margin, so the table's edges line up exactly with the text */
+.editor-wrap .bn-editor [data-content-type='table'] .tableWrapper { margin-inline: calc(-1 * var(--bn-table-widget-size)); width: calc(100% + 2 * var(--bn-table-widget-size)); }
+/* tables in dark mode: borders as quiet as the rest of the page */
+html[data-theme='dark'] .editor-wrap .bn-editor table td, html[data-theme='dark'] .editor-wrap .bn-editor table th { border-color: var(--line-strong) !important; }
+/* the selection bar: buttons fit on one line */
+.sel-bar { gap: 4px; }
+.sel-bar button:not(.icon-btn) { padding: 0 8px; }
+/* nothing should make the page scroll sideways (wide blocks scroll inside themselves) */
+.main { overflow-x: hidden; }
